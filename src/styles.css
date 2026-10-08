@@ -1520,3 +1520,23 @@ button { font-size: 14px; font-weight: 500; }
 .route-bottom-cta.route-charter-cta {
   border-top: 0;
 }
+
+.chat-message.assistant:has(.chat-plan) { width: 100%; padding: 0; overflow: hidden; }
+.chat-plan { padding: 18px 16px; background: linear-gradient(145deg, #f1f5ff, #fff 45%); border-radius: 16px; }
+.chat-plan-heading { display: flex; justify-content: space-between; align-items: center; color: var(--forest-deep); font-size: 12px; }
+.chat-plan-heading svg { width: 24px; height: 24px; }
+.chat-plan h3 { margin: 12px 0 6px; font-size: 19px; }
+.chat-plan > p { color: var(--muted); }
+.chat-plan dl { display: grid; gap: 14px; padding: 16px 0; border-block: 1px solid var(--line); }
+.chat-plan dl > div { display: grid; grid-template-columns: 68px 1fr; gap: 12px; font-size: 13px; line-height: 1.6; }
+.chat-plan dt { color: var(--muted); }
+.chat-plan dd { margin: 0; overflow-wrap: anywhere; }
+.chat-plan-price { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.chat-plan-price strong { color: var(--price); font-size: 26px; }
+.chat-plan-price small, .chat-plan-price span { font-size: 12px; font-weight: 400; }
+.chat-plan .chat-plan-notice { font-size: 11px; line-height: 1.6; margin: 12px 0; }
+.chat-plan-actions { display: flex; gap: 10px; margin-top: 16px; }
+.chat-plan-actions button { min-height: 44px; padding: 0 14px; border: 0; border-radius: var(--radius-pill); background: var(--forest-soft); color: var(--forest-deep); cursor: pointer; }
+.chat-plan-actions button:last-child { flex: 1; background: var(--primary-action); color: white; }
+.chat-plan-heading h3 { margin: 0; color: var(--ink); }
+.chat-plan-actions button:disabled { opacity: .5; cursor: default; }

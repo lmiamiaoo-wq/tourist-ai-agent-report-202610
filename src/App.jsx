@@ -1,6 +1,6 @@
 import { charterAmount } from './charterPricing'
-import { CharterForm, ContactSheet, Storefront, initialCharter } from './TravelBooking'
-import { parseCharterReply } from './charterChat'
+import { ContactSheet, Storefront } from './TravelBooking'
+import { advanceCharter, charterExamples, welcomeMessages } from './charterChat'
 import { createPortal } from 'react-dom'
 import React, { useEffect, useRef, useState } from 'react'
 import {
@@ -320,7 +320,6 @@ function ChatDatePicker({ value, min, onChange }) {
 function App() {
   const [storeOpen, setStoreOpen] = useState(false)
   const [contact, setContact] = useState(null)
-  const [charterForm, setCharterForm] = useState(initialCharter)
   const [playRequest, setPlayRequest] = useState({})
   const [drawerOpen, setDrawerOpen] = useState(false)
   const [navSolid, setNavSolid] = useState(false)
@@ -340,7 +339,7 @@ function App() {
   const [toast, setToast] = useState('')
   const [bookingOpen, setBookingOpen] = useState(false)
   const [booking, setBooking] = useState(createDefaultOrder)
-  const [messages, setMessages] = useState([])
+  const [messages, setMessages] = useState(welcomeMessages)
   const [charterRequest, setCharterRequest] = useState({ people: '', date: '', destination: '' })
   const visibleCards = savedCards.filter((card) => `${card.name}${card.role}${card.lastMessage}`.toLowerCase().includes(cardSearch.trim().toLowerCase()))
   const visibleOrders = orderFilter === '全部' ? orderSamples : orderSamples.filter((order) => order.status === orderFilter)
@@ -351,7 +350,7 @@ function App() {
   }, [messages, charterRequest, conversationId, playRequest])
   const newConversation = () => {
     setConversationId(crypto.randomUUID())
-    setMessages([])
+    setMessages(welcomeMessages())
     setPlayRequest({})
     setCharterRequest({ people: '', date: '', destination: '' })
     setInput('')
@@ -428,27 +427,40 @@ function App() {
     setMessages(current => [...current, { role: 'user', text: '带我玩' }, { role: 'assistant', text: '想去哪里玩，或者想体验什么？', suggestions: ['贵州全景深度游', '看自然风景'] }])
   }
   const submitPlay = (text) => {
-    const parsed = parseCharterReply(text, playRequest)
-    const preference = /古镇|小吃|美食|轻松|半日/.test(text) ? '古镇' : /自然|山水|瀑布|风景|全景深度/.test(text) ? '自然风景' : playRequest.preference
-    const next = { ...parsed, preference }
-    setPlayRequest(next)
-    const missing = [!next.destination && !next.preference && '目的地或想体验的玩法'].filter(Boolean)
-    let response
-    if (missing.length) response = { text: `记下了，还需要${missing.join('、')}。可以直接补充，我会结合前面的需求为你匹配。` }
-    else response = { text: '为你匹配到自然珍宝奇趣之旅7天6晚大环线：一次串联黄果树、荔波、西江、镇远与梵净山。点击下方卡片查看完整线路。', productId: 'guizhou-panorama-7d6n' }
-    setMessages(current => response.productId
-      ? [...current, { role: 'user', text }, { role: 'assistant', text: response.text }, { role: 'assistant', productId: response.productId }]
-      : [...current, { role: 'user', text }, { role: 'assistant', ...response }])
+    const result = advanceCharter(text, playRequest)
+    setPlayRequest(result.request)
+    setMessages(current => [...current, { role: 'user', text }, ...(result.message ? [result.message] : [])])
+    if (result.updatedPlan) setMessages(current => current.map((message, index) => index === activePlanIndex ? { ...message, plan: result.updatedPlan } : message))
   }
-  const submitCharterForm = (request) => {
-    const summary = `${request.type} · ${request.people}人${request.type === '日包车' ? ` · ${request.days}天` : ''}，${request.date} ${request.time}，从${request.origin.name}${request.origin.note ? '（'+request.origin.note+'）' : ''}到${request.destination.name}${request.destination.note ? '（'+request.destination.note+'）' : ''}${request.needs?.trim() ? '，更多需求：'+request.needs.trim() : ''}`
+  const activePlanIndex = messages.findLastIndex(message => message.plan)
+  const paidPlans = useRef(new Set())
+  const cancelPlan = (index) => {
+    if (playRequest.stage !== 'confirm' || index !== activePlanIndex) return
+    setPlayRequest(current => ({ ...current, stage: 'cancelled' }))
+    setInput('')
+    setMessages(current => [...current.map((message, i) => i === index ? { ...message, plan: { ...message.plan, status: 'cancelled' } } : message), { role: 'assistant', text: '订单已取消。如需重新规划，可以告诉我你的出行想法。' }])
+  }
+  const payPlan = (plan, index) => {
+    const key = `${conversationId}:${index}`
+    if (playRequest.stage !== 'confirm' || index !== activePlanIndex || paidPlans.current.has(key)) return
+    paidPlans.current.add(key)
+    setPlayRequest(current => ({ ...current, stage: 'done' }))
+    setInput('')
+    setMessages(current => current.map((message, i) => i === index ? { ...message, plan: { ...message.plan, status: 'paid' } } : message))
+    const order = createChatOrder({ ...plan, type: '日包车', days: 1, people: Number(plan.people), origin: { name: plan.pickup }, destination: { name: plan.destination }, contactName: profile.name, phone: '' })
+    confirmChatOrderPayment(order)
+  }
+
+  const createChatOrder = (request) => {
     const now = new Date()
-    const vehicleTier = request.people <= 4 ? '经济5座' : request.people <= 6 ? '经济7座' : '舒适7座'
+    const vehicleTier = '舒适5座'
     const routeLocations = request.type === '日包车'
-      ? [request.origin.name, request.destination.name, '贵阳市6城区']
+      ? [request.origin.name, request.destination.name, request.returnTo || request.origin.name]
       : [request.origin.name, request.destination.name]
     const order = {
       amount: charterAmount(request),
+      people: request.people,
+      luggage: request.luggage,
       needs: request.needs?.trim() || '',
       contactName: request.contactName.trim(),
       phone: request.phone.trim(),
@@ -467,21 +479,14 @@ function App() {
       routeLocations,
       status: 'pending',
     }
-    setMessages(current => [...current, { role: 'user', text: summary }, { role: 'assistant', text: '订单已生成，请确认信息并完成支付。' }, { role: 'assistant', order, suggestions: ['价格能再优惠吗', '能临时加景点吗'] }])
     setBooking(current => ({ ...current, travelDate: request.date, departureTime: request.time, adults: request.people, pickup: request.origin.name, destination: request.destination.name, charterType: request.type, days: request.days }))
+    return order
   }
-  const updateChatOrder = (orderNo, patch) => setMessages(current => current.map(message => message.order?.orderNo === orderNo ? { ...message, order: { ...message.order, ...patch } } : message))
   const handleOrderQuickAction = (text) => {
-    const response = text === '价格能再优惠吗'
+    const response = (text === '价格能再优惠吗' || text === '价格可以再优惠吗')
       ? '当前价格已按车型和服务时长核算；如行程时间或车型可调整，我可以继续为你匹配更合适的方案。'
       : '可以。出发前或行程中都可联系司机协商加点，新增路线可能会产生额外里程或用车费用。'
     setMessages(current => [...current, { role: 'user', text }, { role: 'assistant', text: response }])
-  }
-  const handleSuggestionClick = (text, index) => {
-    setMessages(current => current.map((message, messageIndex) => messageIndex === index ? { ...message, suggestions: undefined } : message))
-    if (text === '价格能再优惠吗' || text === '能临时加景点吗') handleOrderQuickAction(text)
-    else if (text === '特色服务' || text === '橱窗') setStoreOpen(true)
-    else submitPlay(text)
   }
   const confirmChatOrderPayment = (order) => {
     setMessages(current => {
@@ -490,7 +495,7 @@ function App() {
       return [...paidMessages, { role: 'assistant', text: '支付成功，待司机确认接单。', paymentPendingOrderNo: order.orderNo }]
     })
     window.setTimeout(() => {
-      setMessages(current => current.some(message => message.orderConfirmation?.orderNo === order.orderNo) ? current : [...current, { role: 'assistant', orderConfirmation: {
+      setMessages(current => !current.some(message => message.paymentPendingOrderNo === order.orderNo) || current.some(message => message.orderConfirmation?.orderNo === order.orderNo) ? current : [...current, { role: 'assistant', orderConfirmation: {
         orderNo: order.orderNo,
         vehicleTier: order.vehicleTier,
         vehicleModel: order.vehicleModel,
@@ -500,18 +505,22 @@ function App() {
       } }])
     }, 5000)
     window.setTimeout(() => {
-      setMessages(current => current.some(message => message.tripProgress?.orderNo === order.orderNo) ? current : [...current, { role: 'assistant', tripProgress: createTripProgress(order) }])
+      setMessages(current => !current.some(message => message.paymentPendingOrderNo === order.orderNo) || current.some(message => message.tripProgress?.orderNo === order.orderNo) ? current : [...current, { role: 'assistant', tripProgress: createTripProgress(order) }])
     }, 10000)
     setToast('支付成功')
   }
-  const handleSend = (event) => {
-    event.preventDefault()
-    const text = input.trim()
+  const sendMessage = (value) => {
+    const text = value.trim()
     if (!text) { setToast('先说说你想怎么玩'); return }
     if (text === '特色服务' || text === '橱窗') { setStoreOpen(true); setInput(''); return }
     if (text === '带我玩') { startPlay(); return }
-    submitPlay(text)
+    if ((text === '价格能再优惠吗' || text === '价格可以再优惠吗') || text === '能临时加景点吗') handleOrderQuickAction(text)
+    else submitPlay(text)
     setInput('')
+  }
+  const handleSend = (event) => {
+    event.preventDefault()
+    sendMessage(input)
   }
 
   const updateTravelerCount = (key, amount) => {
@@ -580,39 +589,37 @@ function App() {
             </div>
           </article>
 
-          <CharterForm value={charterForm} onChange={setCharterForm} onSubmit={submitCharterForm} />
+
 
           {messages.length > 0 && (
             <section className="charter-chat" aria-label="包车对话">
               <div className="chat-messages" role="log" aria-live="polite">
                 {messages.map((message, index) => (
                   <React.Fragment key={index}>
-                  <article className={`chat-message ${message.role}`} ref={index === messages.length - 1 ? chatRef : undefined}>
-                    {message.text && <p>{message.text}</p>}
+                  {message.text && (message.productId || message.plan) && <article className={`chat-message ${message.role}`} ref={index === messages.length - 1 ? chatRef : undefined}>
+                    <p>{message.text}</p>
+                  </article>}
+                  <article className={`chat-message ${message.role}`} ref={!((message.productId || message.plan) && message.text) && index === (messages.length === 2 ? 0 : messages.length - 1) ? chatRef : undefined}>
+                    {message.text && !message.productId && !message.plan && <p>{message.text}</p>}
                     {message.productId && (() => {
                       const product = recommendations.find(item => item.id === message.productId)
                       return <div className="chat-product"><button className="chat-product-overview" type="button" onClick={() => { setSelectedRoute(product); setBookingOpen(false) }} aria-label={`查看${product.name}详情`}><img src={product.image} alt={product.name} /><span><strong>{product.cardName || product.name}</strong><small>{product.cardDescription || (product.charter ? '司机服务' : '线路')}</small>{(product.referencePrice || product.priceLabel || product.price) && <b>{product.referencePrice ? <>参考价 ￥{product.referencePrice}</> : product.priceLabel || <>￥{product.price}<small>/{product.unit}</small></>}</b>}</span></button></div>
                     })()}
-                    {message.charterSummary && <button className="chat-contact-link" type="button" onClick={() => setContact({kind:'phone',context:message.charterSummary})}>联系司机沟通行程</button>}
-                    {message.order && <section className={`chat-order-card ${message.order.status}`} aria-label={`订单${message.order.orderNo}`}>
-                      <div className="chat-order-summary">
-                        <span><small>订单金额</small><strong>￥{message.order.amount}</strong></span>
-                        <dl><div><dt>包车类型</dt><dd>{message.order.charterType}</dd></div><div><dt>行程时间</dt><dd>{formatTripWindow(message.order.departureAt)}</dd></div></dl>
-                      </div>
-                      <div className="chat-order-section route-section">
-                        <h4>行程线路</h4>
-                        <p className="chat-order-route-inline">{(message.order.routeLocations || ['贵阳大十字喷泉池高空亚朵酒店', '黄果树瀑布', '贵阳市6城区']).join(' - ')}</p>
-                      </div>
-                      <div className="chat-order-section vehicle-section">
-                        <div className="chat-order-heading"><h4>{message.order.vehicleTier}<small>{message.order.vehicleCapacity}</small></h4></div>
-                        <div className="vehicle-product"><span><strong>{message.order.vehicleModel}</strong><small>{message.order.vehiclePlate}</small></span><img src={vehicleImageForTier(message.order.vehicleTier)} alt={`${message.order.vehicleTier}车辆`} /></div>
-                      </div>
-                      <div className="chat-order-section trip-section">
-                        <h4>订单信息</h4>
-                        <dl><div><dt>订单号</dt><dd>{message.order.orderNo}</dd></div><div><dt>下单时间</dt><dd>{message.order.createdAt}</dd></div><div><dt>乘车联络人</dt><dd>{message.order.contactName || '--'}</dd></div><div><dt>手机号</dt><dd>{message.order.phone || '--'}</dd></div></dl>
-                      </div>
-                      <div className="chat-order-actions"><button type="button" disabled={message.order.status !== 'pending'} onClick={() => { updateChatOrder(message.order.orderNo, { status: 'cancelled' }); setToast('订单已取消') }}>{message.order.status === 'cancelled' ? '已取消' : '取消订单'}</button><button type="button" disabled={message.order.status !== 'pending'} onClick={() => confirmChatOrderPayment(message.order)}>{message.order.status === 'paid' ? '已支付' : '立即支付'}</button></div>
+                    {message.plan && <section className="chat-plan" aria-label="黄果树包车方案">
+                      <div className="chat-plan-heading"><h3>黄果树瀑布一日包车</h3><CarProfileIcon /></div>
+                      <p>杨通海 · 舒适5座 · 当天往返</p>
+                      <dl>
+                        <div><dt>出发时间</dt><dd>{message.plan.date} {message.plan.time}</dd></div>
+                        <div><dt>同行人数</dt><dd>{message.plan.people}人 · {message.plan.luggage}</dd></div>
+                        <div><dt>上车地点</dt><dd>{message.plan.pickup}</dd></div>
+                        <div><dt>行程线路</dt><dd>{message.plan.pickup} → 黄果树瀑布 → {message.plan.returnTo}</dd></div>
+                        <div><dt>其他需求</dt><dd>{message.plan.needs}</dd></div>
+                      </dl>
+                      <div className="chat-plan-price"><strong>¥580<small> / 天</small></strong><span>含8小时 · 300公里</span></div>
+                      <p className="chat-plan-notice">含车辆、司机及燃油费；门票、餐饮、停车和高速费另计。特殊需求需司导确认。</p>
+                      {index === activePlanIndex && <div className="chat-plan-actions"><button type="button" disabled={playRequest.stage !== 'confirm'} onClick={() => cancelPlan(index)}>{message.plan.status === 'cancelled' ? '已取消' : '取消订单'}</button><button type="button" disabled={playRequest.stage !== 'confirm'} onClick={() => payPlan(message.plan, index)}>{message.plan.status === 'paid' ? '已支付' : '立即支付'}</button></div>}
                     </section>}
+                    {message.charterSummary && <button className="chat-contact-link" type="button" onClick={() => setContact({kind:'phone',context:message.charterSummary})}>联系司机沟通行程</button>}
                     {message.orderConfirmation && <section className="chat-order-confirmation" aria-label="司机已确认接单">
                       <div className="confirmation-status"><div><strong>司机已确认接单</strong><small>司机将按约定地点抵达上车点</small></div></div>
                       <div className="confirmation-assignment">
@@ -630,7 +637,8 @@ function App() {
                       </div>
                     )}
                   </article>
-                  {message.suggestions && index === messages.length - 1 && (!message.order || message.order.status === 'pending') && <div className="chat-suggestions">{message.suggestions.map(text => <button key={text} type="button" onClick={() => handleSuggestionClick(text, index)}><span>{text}</span><ArrowUpRightIcon aria-hidden="true" /></button>)}</div>}
+                  {message.plan && index === activePlanIndex && playRequest.stage === 'confirm' && <div className="chat-suggestions">{['改为9点出发', '价格可以再优惠吗'].map(text => <button key={text} type="button" onClick={() => sendMessage(text)}><span>{text}</span><ArrowUpRightIcon aria-hidden="true" /></button>)}</div>}
+                  {message.suggestions && index === messages.length - 1 && (!message.order || message.order.status === 'pending') && <div className="chat-suggestions">{message.suggestions.map(text => <button key={text} type="button" onClick={() => sendMessage(text)}><span>{text}</span><ArrowUpRightIcon aria-hidden="true" /></button>)}</div>}
                   </React.Fragment>
                 ))}
               </div>
@@ -641,7 +649,7 @@ function App() {
         <form className="composer" onSubmit={handleSend}>
           <div className="quick-prompts" aria-label="快捷输入">
             {quickPrompts.map((prompt) => (
-              <button type="button" key={prompt} onClick={() => prompt === '带我玩' ? startPlay() : setStoreOpen(true)} className={input === prompt ? 'selected' : ''}>
+              <button type="button" key={prompt} onClick={() => sendMessage(prompt)} className={input === prompt ? 'selected' : ''}>
                 <SparkleIcon aria-hidden="true" />
                 <span>{prompt}</span>
               </button>
@@ -653,7 +661,9 @@ function App() {
               id="travel-question"
               value={input}
               onChange={(event) => setInput(event.target.value)}
+              onClick={() => { if (!input.trim()) setInput(charterExamples[playRequest.stage || 'interests']) }}
               placeholder="告诉我你想去哪，或者问问贵州怎么玩"
+
               autoComplete="off"
             />
             <button className="send-button" type="submit" aria-label="发送问题"><ArrowUpIcon weight="bold" /></button>
