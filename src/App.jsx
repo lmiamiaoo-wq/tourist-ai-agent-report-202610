@@ -1,17 +1,22 @@
-import { charterAmount } from './charterPricing'
+import ShareGuideSheet from './ShareGuideSheet'
+import GuideServices from './GuideServices'
+import ConversationComposer from './ConversationComposer'
 import { ContactSheet, Storefront } from './TravelBooking'
-import { advanceCharter, charterExamples, welcomeMessages } from './charterChat'
+import JourneyDemo from './JourneyDemo'
+import { INTRO } from './journeyFlow'
 import { createPortal } from 'react-dom'
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import {
   ArrowLeftIcon,
   ArrowUpRightIcon,
   BatteryHighIcon,
+  BellIcon,
   CalendarCheckIcon,
   CellSignalHighIcon,
   CaretRightIcon,
   CheckCircleIcon,
   HeartIcon,
+  HouseIcon,
   HeadphonesIcon,
   PhoneIcon,
   GearIcon,
@@ -171,7 +176,7 @@ const createTripProgress = (order) => {
     vehicleColor: order.vehicleColor,
     vehicleModel: order.vehicleModel,
     vehicleTier: order.vehicleTier,
-    driverName: '杨通海',
+    driverName: '龙师傅',
   }
 }
 
@@ -208,17 +213,13 @@ const createDefaultOrder = () => {
   return { travelDate: formatLocalDate(new Date()), adults: 2, children: 0, seniors: 0, phone: '', pickup: '' }
 }
 
-const drawerItems = [
-  { label: '我的行程', icon: CalendarCheckIcon },
-  { label: '我的订单', icon: ReceiptIcon },
-  { label: '名片夹', icon: IdentificationCardIcon },
-]
+
 
 const tripGroups = [
   {
     title: '进行中',
     trips: [
-      { name: '贵旅出行-日包车', date: '今天 08:30-18:30', routeStops: ['贵阳市区', '黄果树瀑布', '贵阳市区'], driver: '杨通海', status: '进行中', tone: 'active', vehiclePlate: '贵A·K7286', vehicleColor: '银色', vehicleModel: '吉利曹操60' },
+      { name: '贵旅出行-日包车', date: '今天 08:30-18:30', routeStops: ['贵阳市区', '黄果树瀑布', '贵阳市区'], driver: '龙师傅', status: '进行中', tone: 'active', vehiclePlate: '贵A·K7286', vehicleColor: '银色', vehicleModel: '吉利曹操60' },
     ],
   },
   {
@@ -231,17 +232,35 @@ const tripGroups = [
 
 const orderTabs = ['全部', '进行中', '待付款', '待出行', '退款/售后']
 const orderSamples = [
-  { id: 'QX20260914001', name: '贵旅出行-日包车', origin: '贵阳大十字喷泉池高空亚朵酒店', destination: '黄果树瀑布', createdAt: '2026-09-14 19:32', tripTime: '2026-09-15 09:00-17:00', driver: '杨通海', vehicleModel: '日产轩逸', vehiclePlate: '贵A·K7286', amount: '580', status: '进行中', tone: 'active' },
+  { id: 'QX20260914001', name: '贵旅出行-日包车', origin: '贵阳大十字喷泉池高空亚朵酒店', destination: '黄果树瀑布', createdAt: '2026-09-14 19:32', tripTime: '2026-09-15 09:00-17:00', driver: '龙师傅', vehicleModel: '日产轩逸', vehiclePlate: '贵A·K7286', amount: '580', status: '进行中', tone: 'active' },
   { id: 'QX20260918016', name: '贵旅出行-青岩古镇半日游', origin: '贵阳市南明区', destination: '青岩古镇南门', createdAt: '2026-09-14 20:08', tripTime: '2026-09-18 13:00-18:00', driver: '罗师傅', vehicleModel: '日产轩逸', vehiclePlate: '贵A·Q5182', amount: '396', status: '待出行', tone: 'upcoming' },
-  { id: 'QX20260914022', name: '贵旅出行-黄果树一日包车', origin: '贵阳北站', destination: '黄果树景区', createdAt: '2026-09-14 20:42', tripTime: '2026-09-20 08:30-16:30', driver: '杨通海', vehicleModel: '吉利曹操60', vehiclePlate: '贵A·K7286', amount: '580', status: '待付款', tone: 'pending' },
+  { id: 'QX20260914022', name: '贵旅出行-黄果树一日包车', origin: '贵阳北站', destination: '黄果树景区', createdAt: '2026-09-14 20:42', tripTime: '2026-09-20 08:30-16:30', driver: '龙师傅', vehicleModel: '吉利曹操60', vehiclePlate: '贵A·K7286', amount: '580', status: '待付款', tone: 'pending' },
   { id: 'QX20260828016', name: '贵旅出行-青岩古镇半日游', origin: '贵阳市云岩区', destination: '青岩古镇', createdAt: '2026-08-26 18:12', tripTime: '2026-08-28 13:00-18:00', driver: '罗师傅', vehicleModel: '日产轩逸', vehiclePlate: '贵A·Q5182', amount: '396', status: '已完成', tone: 'done' },
   { id: 'QX20260811009', name: '贵旅出行-天河潭一日游', origin: '贵阳市观山湖区', destination: '天河潭旅游度假区', createdAt: '2026-08-09 10:26', tripTime: '2026-08-11 09:00-17:00', driver: '赵师傅', vehicleModel: '日产轩逸', vehiclePlate: '贵A·M6039', amount: '368', status: '退款/售后', tone: 'after-sale' },
 ]
 
 const savedCards = [
-  { name: '杨通海', role: '贵旅出行·司导', lastMessage: '明天早上8:30，我到酒店大堂接您。', image: '/assets/yang-tonghai-avatar.png', tone: 'blue', saved: true },
-  { name: '罗文静', role: '贵旅出行·司导', lastMessage: '青岩古镇下午出发更轻松。', image: '/assets/luo-wenjing-avatar.png', tone: 'violet', saved: false },
-  { name: '赵明远', role: '贵旅出行·司导', lastMessage: '小七孔这两天天气很好，适合出行。', image: '/assets/zhao-mingyuan-avatar.png', tone: 'green', saved: false },
+  { name: '龙师傅', role: '贵旅出行·司机', lastMessage: '明天早上8:30，我到酒店大堂接您。', image: '/assets/yang-tonghai-avatar.png', tone: 'blue', saved: true, tags: [{ label: '商务7座', kind: 'vehicle' }, { label: '13年驾龄', kind: 'person' }, { label: '退伍老兵', kind: 'person' }], intro: INTRO },
+  { name: '罗文静', role: '贵旅出行·司机', lastMessage: '青岩古镇下午出发更轻松。', image: '/assets/luo-wenjing-avatar.png', tone: 'violet', saved: false,
+    tags: [{ label: '舒适5座', kind: 'vehicle' }, { label: '8年驾龄', kind: 'person' }, { label: '亲子向导', kind: 'person' }],
+    intro: '乘客您好，我是罗文静，熟悉贵阳街巷、青岩古镇和周边亲子路线。提供机场接送、半日游和家庭包车服务，喜欢带大家逛老街、尝小吃。行程节奏可以按老人和孩子的体力调整，欢迎提前告诉我您的出行安排。',
+    demoMessages: [
+      { role: 'assistant', text: '这次想去哪里玩？告诉我出行时间、同行人数和孩子的年龄，我来帮您安排轻松的旅程。' },
+      { role: 'user', text: '我们一家三口，孩子6岁，想明天下午去青岩古镇，时间不用太赶。' },
+      { role: 'assistant', text: '可以安排半日慢游，下午从酒店接您。先逛石板老街，再找个地方尝小吃，中途留出休息时间。' },
+      { role: 'user', text: '我们住在甲秀楼附近，想在古镇吃完晚饭再回来。' },
+      { role: 'assistant', text: '好的，晚饭后送您回酒店。您把酒店名称和方便出发的时间发给我，我再确认接送安排。' },
+    ] },
+  { name: '赵明远', role: '贵旅出行·司机', lastMessage: '小七孔这两天天气很好，适合出行。', image: '/assets/zhao-mingyuan-avatar.png', tone: 'green', saved: false,
+    tags: [{ label: '商务7座', kind: 'vehicle' }, { label: '10年驾龄', kind: 'person' }, { label: '山水向导', kind: 'person' }],
+    intro: '乘客您好，我是赵明远，常跑荔波小七孔、黄果树和黔东南山水路线。提供长途接送、多日包车和沿途游览建议，熟悉山路与休息点。喜欢摄影，也愿意陪您慢慢看风景，路线和停留时间都可以提前商量。',
+    demoMessages: [
+      { role: 'assistant', text: '欢迎来贵州看山水！告诉我您的出发地点、游玩天数和同行人数，我来帮您规划路线。' },
+      { role: 'user', text: '我们4个人，想从贵阳去小七孔玩两天，希望能多留些拍照时间。' },
+      { role: 'assistant', text: '建议第一天前往荔波，途中适当休息；第二天早点进小七孔，把主要时间留给景区游览和拍照。' },
+      { role: 'user', text: '有两位老人，步行太多会比较累，能安排轻松一些吗？' },
+      { role: 'assistant', text: '可以，我会结合景区交通和大家的体力安排停留，减少来回走动。出发前再一起确认天气、接送地点和返程时间。' },
+    ] },
 ]
 
 function SystemStatusBar() {
@@ -318,9 +337,9 @@ function ChatDatePicker({ value, min, onChange }) {
 }
 
 function App() {
-  const [storeOpen, setStoreOpen] = useState(false)
+  const [shareOpen, setShareOpen] = useState(false)
+  const [storeOpen, setStoreOpen] = useState(() => { const params = new URLSearchParams(location.search); return params.has('guide') && params.get('view') !== 'chat' })
   const [contact, setContact] = useState(null)
-  const [playRequest, setPlayRequest] = useState({})
   const [drawerOpen, setDrawerOpen] = useState(false)
   const [navSolid, setNavSolid] = useState(false)
   const [detailNavSolid, setDetailNavSolid] = useState(false)
@@ -330,59 +349,45 @@ function App() {
   const [orderFilter, setOrderFilter] = useState('全部')
   const [homeReturnPage, setHomeReturnPage] = useState(null)
   const [cardSearch, setCardSearch] = useState('')
-  const [favoriteCards, setFavoriteCards] = useState(() => new Set(savedCards.filter((card) => card.saved).map((card) => card.name)))
-  const [conversationId, setConversationId] = useState(() => crypto.randomUUID())
-  const [conversations, setConversations] = useState([])
-  const [following, setFollowing] = useState(false)
+  const [selectedGuide, setActiveGuide] = useState(() => savedCards.find(card => card.name === new URLSearchParams(location.search).get('guide')) || savedCards[0])
+  const activeGuide = savedCards.find(card => card.name === selectedGuide.name) || savedCards[0]
+  const [contactMessages, setContactMessages] = useState({})
+  const [contactDraft, setContactDraft] = useState('')
+  const [followedGuides, setFollowedGuides] = useState(new Set())
+  const following = followedGuides.has(activeGuide.name)
+  const toggleFollowing = () => setFollowedGuides(current => { const next = new Set(current); next.has(activeGuide.name) ? next.delete(activeGuide.name) : next.add(activeGuide.name); return next })
   const [selectedRoute, setSelectedRoute] = useState(null)
-  const [input, setInput] = useState('')
   const [toast, setToast] = useState('')
   const [bookingOpen, setBookingOpen] = useState(false)
   const [booking, setBooking] = useState(createDefaultOrder)
-  const [messages, setMessages] = useState(welcomeMessages)
-  const [charterRequest, setCharterRequest] = useState({ people: '', date: '', destination: '' })
   const visibleCards = savedCards.filter((card) => `${card.name}${card.role}${card.lastMessage}`.toLowerCase().includes(cardSearch.trim().toLowerCase()))
   const visibleOrders = orderFilter === '全部' ? orderSamples : orderSamples.filter((order) => order.status === orderFilter)
-  useEffect(() => {
-    if (!messages.length) return
-    const entry = { playRequest, id: conversationId, title: messages.find((message) => message.role === 'user' && message.text !== '我要包车')?.text || '包车咨询', messages, request: charterRequest }
-    setConversations((current) => [entry, ...current.filter((item) => item.id !== conversationId)])
-  }, [messages, charterRequest, conversationId, playRequest])
-  const newConversation = () => {
-    setConversationId(crypto.randomUUID())
-    setMessages(welcomeMessages())
-    setPlayRequest({})
-    setCharterRequest({ people: '', date: '', destination: '' })
-    setInput('')
-    setDrawerOpen(false)
-    homeRef.current?.scrollTo({ top: 0, behavior: 'smooth' })
-  }
-  const restoreConversation = (entry) => {
-    setConversationId(entry.id)
-    setPlayRequest(entry.playRequest || {})
-    setMessages(entry.messages)
-    setCharterRequest(entry.request)
-    setInput('')
-    setDrawerOpen(false)
-  }
   const homeRef = useRef(null)
-  const chatRef = useRef(null)
+  const appRef = useRef(null)
+  const [journeyModalOpen, setJourneyModalOpen] = useState(false)
+  const [conversationEntry, setConversationEntry] = useState(0)
+  useLayoutEffect(() => {
+    homeRef.current?.scrollTo({ top: 0, behavior: 'instant' })
+    setNavSolid(false)
+  }, [conversationEntry])
   const openContactCard = (card) => {
-    setHomeReturnPage('名片夹')
+    setActiveGuide(card)
+    setContactDraft('')
+    setHomeReturnPage(drawerOpen ? null : '名片夹')
+    setDrawerOpen(false)
     setAccountPage(null)
-    setToast(`已打开${card.name}的名片`)
-    window.requestAnimationFrame(() => window.requestAnimationFrame(() => {
-      homeRef.current?.scrollTo({ top: homeRef.current.scrollHeight, behavior: 'auto' })
-    }))
+    setStoreOpen(false)
+    setConversationEntry(current => current + 1)
   }
-  useEffect(() => {
-    if (messages.length && homeRef.current && chatRef.current) {
-      const home = homeRef.current
-      const chat = chatRef.current
-      home.scrollTo({ top: home.scrollTop + chat.getBoundingClientRect().top - home.getBoundingClientRect().top - 112, behavior: 'smooth' })
-    }
-  }, [messages.length])
-
+  const openConsultation = () => {
+    setSelectedRoute(null)
+    setBookingOpen(false)
+    setStoreOpen(false)
+    setContact(null)
+    if (accountPage === '名片夹') setHomeReturnPage('名片夹')
+    setAccountPage(null)
+    setConversationEntry(current => current + 1)
+  }
   const bookingDateOptions = getBookingDateOptions()
   const quickBookingDates = bookingDateOptions.map((option) => formatLocalDate(option.date))
   const isCustomBookingDate = !quickBookingDates.includes(booking.travelDate)
@@ -415,114 +420,6 @@ function App() {
     if (!selectedRoute) setDetailNavSolid(false)
   }, [selectedRoute])
 
-  const openChatProduct = (request) => {
-    setBooking((current) => ({ ...current, travelDate: request.date, adults: Number(request.people) }))
-    setSelectedRoute(recommendations[0])
-    setBookingOpen(false)
-  }
-
-  const startPlay = () => {
-    setInput('')
-    setPlayRequest({})
-    setMessages(current => [...current, { role: 'user', text: '带我玩' }, { role: 'assistant', text: '想去哪里玩，或者想体验什么？', suggestions: ['贵州全景深度游', '看自然风景'] }])
-  }
-  const submitPlay = (text) => {
-    const result = advanceCharter(text, playRequest)
-    setPlayRequest(result.request)
-    setMessages(current => [...current, { role: 'user', text }, ...(result.message ? [result.message] : [])])
-    if (result.updatedPlan) setMessages(current => current.map((message, index) => index === activePlanIndex ? { ...message, plan: result.updatedPlan } : message))
-  }
-  const activePlanIndex = messages.findLastIndex(message => message.plan)
-  const paidPlans = useRef(new Set())
-  const cancelPlan = (index) => {
-    if (playRequest.stage !== 'confirm' || index !== activePlanIndex) return
-    setPlayRequest(current => ({ ...current, stage: 'cancelled' }))
-    setInput('')
-    setMessages(current => [...current.map((message, i) => i === index ? { ...message, plan: { ...message.plan, status: 'cancelled' } } : message), { role: 'assistant', text: '订单已取消。如需重新规划，可以告诉我你的出行想法。' }])
-  }
-  const payPlan = (plan, index) => {
-    const key = `${conversationId}:${index}`
-    if (playRequest.stage !== 'confirm' || index !== activePlanIndex || paidPlans.current.has(key)) return
-    paidPlans.current.add(key)
-    setPlayRequest(current => ({ ...current, stage: 'done' }))
-    setInput('')
-    setMessages(current => current.map((message, i) => i === index ? { ...message, plan: { ...message.plan, status: 'paid' } } : message))
-    const order = createChatOrder({ ...plan, type: '日包车', days: 1, people: Number(plan.people), origin: { name: plan.pickup }, destination: { name: plan.destination }, contactName: profile.name, phone: '' })
-    confirmChatOrderPayment(order)
-  }
-
-  const createChatOrder = (request) => {
-    const now = new Date()
-    const vehicleTier = '舒适5座'
-    const routeLocations = request.type === '日包车'
-      ? [request.origin.name, request.destination.name, request.returnTo || request.origin.name]
-      : [request.origin.name, request.destination.name]
-    const order = {
-      amount: charterAmount(request),
-      people: request.people,
-      luggage: request.luggage,
-      needs: request.needs?.trim() || '',
-      contactName: request.contactName.trim(),
-      phone: request.phone.trim(),
-      orderNo: `QX${formatLocalDate(now).replaceAll('-', '')}${String(now.getTime()).slice(-6)}`,
-      createdAt: now.toLocaleString('zh-CN', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: false }).replaceAll('/', '-'),
-      charterType: request.type,
-      vehicleTier,
-      vehicleCapacity: request.people <= 4 ? '4人 · 2行李' : '6人 · 4行李',
-      vehicleModel: vehicleModels[vehicleTier],
-      vehiclePlate: '贵A·K7286',
-      vehicleColor: '银色',
-      departureAt: `${request.date} ${request.time}`,
-      serviceTime: request.type === '日包车' ? `${request.days}天 · 每日8小时` : '点对点服务',
-      origin: `${request.origin.name}${request.origin.note ? ' · '+request.origin.note : ''}`,
-      destination: `${request.destination.name}${request.destination.note ? ' · '+request.destination.note : ''}`,
-      routeLocations,
-      status: 'pending',
-    }
-    setBooking(current => ({ ...current, travelDate: request.date, departureTime: request.time, adults: request.people, pickup: request.origin.name, destination: request.destination.name, charterType: request.type, days: request.days }))
-    return order
-  }
-  const handleOrderQuickAction = (text) => {
-    const response = (text === '价格能再优惠吗' || text === '价格可以再优惠吗')
-      ? '当前价格已按车型和服务时长核算；如行程时间或车型可调整，我可以继续为你匹配更合适的方案。'
-      : '可以。出发前或行程中都可联系司机协商加点，新增路线可能会产生额外里程或用车费用。'
-    setMessages(current => [...current, { role: 'user', text }, { role: 'assistant', text: response }])
-  }
-  const confirmChatOrderPayment = (order) => {
-    setMessages(current => {
-      const paidMessages = current.map(message => message.order?.orderNo === order.orderNo ? { ...message, order: { ...message.order, status: 'paid' } } : message)
-      if (current.some(message => message.orderConfirmation?.orderNo === order.orderNo || message.paymentPendingOrderNo === order.orderNo)) return paidMessages
-      return [...paidMessages, { role: 'assistant', text: '支付成功，待司机确认接单。', paymentPendingOrderNo: order.orderNo }]
-    })
-    window.setTimeout(() => {
-      setMessages(current => !current.some(message => message.paymentPendingOrderNo === order.orderNo) || current.some(message => message.orderConfirmation?.orderNo === order.orderNo) ? current : [...current, { role: 'assistant', orderConfirmation: {
-        orderNo: order.orderNo,
-        vehicleTier: order.vehicleTier,
-        vehicleModel: order.vehicleModel,
-        vehiclePlate: order.vehiclePlate,
-        vehicleColor: order.vehicleColor,
-        driverName: '杨通海',
-      } }])
-    }, 5000)
-    window.setTimeout(() => {
-      setMessages(current => !current.some(message => message.paymentPendingOrderNo === order.orderNo) || current.some(message => message.tripProgress?.orderNo === order.orderNo) ? current : [...current, { role: 'assistant', tripProgress: createTripProgress(order) }])
-    }, 10000)
-    setToast('支付成功')
-  }
-  const sendMessage = (value) => {
-    const text = value.trim()
-    if (!text) { setToast('先说说你想怎么玩'); return }
-    if (text === '特色服务' || text === '橱窗') { setStoreOpen(true); setInput(''); return }
-    if (text === '带我玩') { startPlay(); return }
-    if ((text === '价格能再优惠吗' || text === '价格可以再优惠吗') || text === '能临时加景点吗') handleOrderQuickAction(text)
-    else submitPlay(text)
-    setInput('')
-  }
-  const handleSend = (event) => {
-    event.preventDefault()
-    sendMessage(input)
-  }
-
   const updateTravelerCount = (key, amount) => {
     setBooking((current) => ({ ...current, [key]: Math.max(0, Math.min(30, current[key] + amount)) }))
   }
@@ -540,155 +437,98 @@ function App() {
     reader.readAsDataURL(file)
   }
 
+  const renderContactCollection = (inDrawer = false) => (
+    <div className="account-collection contact-collection">
+              <label className="contact-search"><MagnifyingGlassIcon aria-hidden="true" /><input type="search" value={cardSearch} onChange={(event) => setCardSearch(event.target.value)} placeholder="搜索名片" aria-label="搜索名片" /></label>
+              {visibleCards.map((card) => <article className="contact-card" key={card.name} onClick={() => openContactCard(card)}>
+                <button className="contact-card-main" type="button" aria-label={`与${card.name}对话`}>
+                  {card.image ? <img src={card.image} alt={card.name} /> : <span className={`contact-initial ${card.tone}`}>{card.initials}</span>}
+                  <span className="contact-copy"><span className="contact-name"><strong>{card.name}</strong></span><span className="contact-role-tags"><small>贵旅出行</small><small>司机</small></span></span>
+                </button>
+                {!inDrawer && <button className="contact-profile-button" type="button" aria-label={`${card.name}的个人主页`} onClick={event => { event.stopPropagation(); setActiveGuide(card); setDrawerOpen(false); setStoreOpen(true) }}><HouseIcon aria-hidden="true" /></button>}
+              </article>)}
+              {!visibleCards.length && <p className="contact-empty">没有找到相关名片</p>}
+            </div>
+  )
+
+  const renderGuideCard = (inProfile) => (
+          <article className={`guide-card${inProfile ? '' : ' conversation-guide-card'}`} aria-labelledby={inProfile ? 'profile-guide-name' : 'guide-name'}>
+            <div className="guide-topline">
+              <div className="guide-avatar-wrap">
+                <img className="guide-avatar" src={activeGuide.image} alt={`推荐官${activeGuide.name}`} />
+              </div>
+              <div className="guide-identity">
+                <div className="guide-name-row">
+                  <h1 id={inProfile ? 'profile-guide-name' : 'guide-name'}>{activeGuide.name}</h1>
+                </div>
+                {inProfile && <p className="guide-role">贵旅出行·文旅推荐官</p>}
+                <div className="driver-info-tags" aria-label="车辆与服务信息">
+                  {activeGuide.tags.map(tag => <span key={tag.label} data-kind={tag.kind}>{tag.label}</span>)}
+                </div>
+              </div>
+              {inProfile && <button className="share-button profile-phone-button" type="button" aria-label={`电话联系${activeGuide.name}`} onClick={() => setContact({ kind: 'phone', context: activeGuide.name })}><PhoneIcon /></button>}
+              {inProfile && <button className="share-button" type="button" onClick={() => setShareOpen(true)} aria-label="分享推荐官名片"><ShareNetworkIcon /></button>}
+            </div>
+            {inProfile ? <>
+              <p className="guide-intro">跑遍黔山秀水，为你精选地道景点和美食</p>
+              <div className="guide-contact-actions">
+                <div className="guide-social-stats" aria-label="关注和分享统计"><div><strong>{following ? 69 : 68}</strong><span>被关注</span></div><div><strong>37</strong><span>被分享</span></div></div>
+                <button className="guide-follow-button" type="button" aria-pressed={following} onClick={toggleFollowing}><HeartIcon weight={following ? 'fill' : 'regular'} />{following ? '已关注' : '关注'}</button>
+              </div>
+            </> : <>
+              <div className="guide-corner-actions">
+                <button type="button" aria-label={`${following ? '取消关注' : '关注'}${activeGuide.name}`} aria-pressed={following} onClick={toggleFollowing}><HeartIcon weight={following ? 'fill' : 'regular'} /></button>
+              </div>
+              <button className="guide-profile-link" type="button" onClick={() => setStoreOpen(true)}><IdentificationCardIcon aria-hidden="true" />{`去${activeGuide.name}主页查看更多信息`}<CaretRightIcon /></button>
+            </>}
+          </article>
+  )
+
   return (
-    <div className={`app-shell${selectedRoute ? ' detail-active' : ''}${accountPage || storeOpen ? ' account-active' : ''}${bookingOpen ? ' booking-active' : ''}${navSolid ? ' nav-solid' : ''}${detailNavSolid ? ' detail-nav-solid' : ''}`}>
+    <div ref={appRef} className={`app-shell${selectedRoute ? ' detail-active' : ''}${accountPage || storeOpen ? ' account-active' : ''}${bookingOpen ? ' booking-active' : ''}${navSolid ? ' nav-solid' : ''}${detailNavSolid ? ' detail-nav-solid' : ''}`}>
       <SystemStatusBar />
-      <header inert={!!(storeOpen || selectedRoute || accountPage || drawerOpen)} className={`home-fixed-header${navSolid ? ' solid' : ''}`}>
+      <header inert={!!(storeOpen || selectedRoute || accountPage || drawerOpen || journeyModalOpen)} className={`home-fixed-header${navSolid ? ' solid' : ''}`}>
         <nav className="top-nav" aria-label="主导航">
           {homeReturnPage
             ? <button className="glass-button icon-button" type="button" onClick={() => { setAccountPage(homeReturnPage); setHomeReturnPage(null) }} aria-label={`返回${homeReturnPage}`}><ArrowLeftIcon weight="bold" /></button>
             : <button className="glass-button icon-button" type="button" onClick={() => setDrawerOpen(true)} aria-label="打开侧边栏"><ListIcon weight="bold" /></button>}
-          <div className="compact-driver-title"><strong>杨通海</strong><small>文旅推荐官</small></div>
+          <button type="button" className="compact-driver-title" aria-label={`查看${activeGuide.name}的个人主页`} aria-hidden={!navSolid} tabIndex={navSolid ? 0 : -1} onClick={() => setStoreOpen(true)}><img src={activeGuide.image} alt="" /><strong>{activeGuide.name}</strong></button>
         </nav>
       </header>
-      <main className="home-screen" inert={!!(storeOpen || selectedRoute || accountPage || drawerOpen)} ref={homeRef} onScroll={(event) => setNavSolid(event.currentTarget.scrollTop > 0)}>
-        <header className="hero" aria-label="贵州风景与顶部导航">
-          <img
-            className="hero-image"
-            src="/assets/sunlit-mountain-lake-hero.png"
-            alt="阳光下的森林、群山与碧绿湖泊"
-          />
-          <div className="hero-scrim" />
-        </header>
+      <main className="home-screen" inert={!!(storeOpen || selectedRoute || accountPage || drawerOpen || journeyModalOpen)} ref={homeRef} onScroll={(event) => setNavSolid(event.currentTarget.scrollTop > 0)}>
+        <div className="conversation-hero" aria-hidden="true" />
 
         <section className="content-flow">
-          <article className="guide-card" aria-labelledby="guide-name">
-            <div className="guide-topline">
-              <div className="guide-avatar-wrap">
-                <img className="guide-avatar" src="/assets/yang-tonghai-avatar.png" alt="推荐官杨通海" />
-                <span className="avatar-online-dot" aria-label="当前在线" />
-              </div>
-              <div className="guide-identity">
-                <div className="guide-name-row">
-                  <h1 id="guide-name">杨通海</h1>
-                </div>
-                <p className="guide-role">贵旅出行·文旅推荐官</p>
-                <div className="driver-info-tags" aria-label="车辆与服务信息">
-                  <span>舒适5座</span>
-                  <span>服务8年</span>
-                </div>
-              </div>
-              <button className="share-button" type="button" onClick={() => setToast('推荐官名片链接已复制')} aria-label="分享推荐官名片">
-                <ShareNetworkIcon />
-              </button>
-            </div>
-            <p className="guide-intro">跑遍黔山秀水，为你精选地道景点和美食</p>
-            <div className="guide-contact-actions">
-              <button type="button" aria-pressed={following} onClick={() => setFollowing(current => !current)}><HeartIcon weight={following ? 'fill' : 'regular'} />{following ? '已关注' : '关注'}</button>
-              <button type="button" onClick={() => setContact({ kind: 'phone' })}><PhoneIcon />打电话</button>
-            </div>
-          </article>
+          {renderGuideCard(false)}
 
 
 
-          {messages.length > 0 && (
-            <section className="charter-chat" aria-label="包车对话">
-              <div className="chat-messages" role="log" aria-live="polite">
-                {messages.map((message, index) => (
-                  <React.Fragment key={index}>
-                  {message.text && (message.productId || message.plan) && <article className={`chat-message ${message.role}`} ref={index === messages.length - 1 ? chatRef : undefined}>
-                    <p>{message.text}</p>
-                  </article>}
-                  <article className={`chat-message ${message.role}`} ref={!((message.productId || message.plan) && message.text) && index === (messages.length === 2 ? 0 : messages.length - 1) ? chatRef : undefined}>
-                    {message.text && !message.productId && !message.plan && <p>{message.text}</p>}
-                    {message.productId && (() => {
-                      const product = recommendations.find(item => item.id === message.productId)
-                      return <div className="chat-product"><button className="chat-product-overview" type="button" onClick={() => { setSelectedRoute(product); setBookingOpen(false) }} aria-label={`查看${product.name}详情`}><img src={product.image} alt={product.name} /><span><strong>{product.cardName || product.name}</strong><small>{product.cardDescription || (product.charter ? '司机服务' : '线路')}</small>{(product.referencePrice || product.priceLabel || product.price) && <b>{product.referencePrice ? <>参考价 ￥{product.referencePrice}</> : product.priceLabel || <>￥{product.price}<small>/{product.unit}</small></>}</b>}</span></button></div>
-                    })()}
-                    {message.plan && <section className="chat-plan" aria-label="黄果树包车方案">
-                      <div className="chat-plan-heading"><h3>黄果树瀑布一日包车</h3><CarProfileIcon /></div>
-                      <p>杨通海 · 舒适5座 · 当天往返</p>
-                      <dl>
-                        <div><dt>出发时间</dt><dd>{message.plan.date} {message.plan.time}</dd></div>
-                        <div><dt>同行人数</dt><dd>{message.plan.people}人 · {message.plan.luggage}</dd></div>
-                        <div><dt>上车地点</dt><dd>{message.plan.pickup}</dd></div>
-                        <div><dt>行程线路</dt><dd>{message.plan.pickup} → 黄果树瀑布 → {message.plan.returnTo}</dd></div>
-                        <div><dt>其他需求</dt><dd>{message.plan.needs}</dd></div>
-                      </dl>
-                      <div className="chat-plan-price"><strong>¥580<small> / 天</small></strong><span>含8小时 · 300公里</span></div>
-                      <p className="chat-plan-notice">含车辆、司机及燃油费；门票、餐饮、停车和高速费另计。特殊需求需司导确认。</p>
-                      {index === activePlanIndex && <div className="chat-plan-actions"><button type="button" disabled={playRequest.stage !== 'confirm'} onClick={() => cancelPlan(index)}>{message.plan.status === 'cancelled' ? '已取消' : '取消订单'}</button><button type="button" disabled={playRequest.stage !== 'confirm'} onClick={() => payPlan(message.plan, index)}>{message.plan.status === 'paid' ? '已支付' : '立即支付'}</button></div>}
-                    </section>}
-                    {message.charterSummary && <button className="chat-contact-link" type="button" onClick={() => setContact({kind:'phone',context:message.charterSummary})}>联系司机沟通行程</button>}
-                    {message.orderConfirmation && <section className="chat-order-confirmation" aria-label="司机已确认接单">
-                      <div className="confirmation-status"><div><strong>司机已确认接单</strong><small>司机将按约定地点抵达上车点</small></div></div>
-                      <div className="confirmation-assignment">
-                        <div className="confirmation-vehicle"><div><strong>{message.orderConfirmation.vehiclePlate} · {message.orderConfirmation.vehicleColor}</strong><span>{message.orderConfirmation.vehicleModel}</span></div><img src={vehicleImageForTier(message.orderConfirmation.vehicleTier)} alt={`${message.orderConfirmation.vehicleTier}车辆`} /></div>
-                        <div className="confirmation-driver"><img src="/assets/yang-tonghai-avatar.png" alt={`司机${message.orderConfirmation.driverName}`} /><strong>{message.orderConfirmation.driverName}</strong><button type="button" aria-label="给司机打电话" onClick={() => setContact({kind:'phone',context:`订单${message.orderConfirmation.orderNo}`})}><PhoneIcon weight="fill" aria-hidden="true" /></button></div>
-                      </div>
-                    </section>}
-                    {message.tripProgress && <TripProgressCard trip={message.tripProgress} onCall={() => setContact({kind:'phone',context:`行程${message.tripProgress.orderNo}`})} />}
-                    {message.request && (
-                      <div className="chat-product">
-                        <button className="chat-product-overview" type="button" onClick={() => openChatProduct(message.request)} aria-label="查看推荐的黄果树一日包车详情">
-                          <img src={recommendations[0].image} alt="包车出游风景" />
-                          <span><strong>黄果树一日包车</strong><small>{message.request.date} · {message.request.people}人 · 舒适5座</small><b>￥580<small>/天</small></b></span>
-                        </button>
-                      </div>
-                    )}
-                  </article>
-                  {message.plan && index === activePlanIndex && playRequest.stage === 'confirm' && <div className="chat-suggestions">{['改为9点出发', '价格可以再优惠吗'].map(text => <button key={text} type="button" onClick={() => sendMessage(text)}><span>{text}</span><ArrowUpRightIcon aria-hidden="true" /></button>)}</div>}
-                  {message.suggestions && index === messages.length - 1 && (!message.order || message.order.status === 'pending') && <div className="chat-suggestions">{message.suggestions.map(text => <button key={text} type="button" onClick={() => sendMessage(text)}><span>{text}</span><ArrowUpRightIcon aria-hidden="true" /></button>)}</div>}
-                  </React.Fragment>
-                ))}
-              </div>
-            </section>
-          )}
+          <div hidden={activeGuide.name !== '龙师傅'}><JourneyDemo hidden={activeGuide.name !== '龙师傅'} services={recommendations} onOpenService={product => { setSelectedRoute(product); setBookingOpen(false) }} appRef={appRef} homeRef={homeRef} suspended={!!(activeGuide.name !== '龙师傅' || storeOpen || selectedRoute || accountPage || drawerOpen || contact)} onModalChange={setJourneyModalOpen} /></div>
+          {activeGuide.name !== '龙师傅' && <section className="journey-chat charter-chat" aria-label={`与${activeGuide.name}的出行对话`}><div className="chat-messages" role="log">{[{ role: 'assistant', text: activeGuide.intro }, ...activeGuide.demoMessages].map((message, index) => <div className="journey-message-wrap" key={`demo-${index}`}><article className={`chat-message ${message.role}`}><p>{message.text}</p></article>{index === 0 && <GuideServices services={recommendations} onOpen={product => { setSelectedRoute(product); setBookingOpen(false) }} />}</div>)}{(contactMessages[activeGuide.name] || []).map((text, index) => <article className="chat-message user" key={index}><p>{text}</p></article>)}</div></section>}
         </section>
 
-        <form className="composer" onSubmit={handleSend}>
-          <div className="quick-prompts" aria-label="快捷输入">
-            {quickPrompts.map((prompt) => (
-              <button type="button" key={prompt} onClick={() => sendMessage(prompt)} className={input === prompt ? 'selected' : ''}>
-                <SparkleIcon aria-hidden="true" />
-                <span>{prompt}</span>
-              </button>
-            ))}
-          </div>
-          <div className="input-row">
-            <label htmlFor="travel-question" className="sr-only">向推荐官提问</label>
-            <input
-              id="travel-question"
-              value={input}
-              onChange={(event) => setInput(event.target.value)}
-              onClick={() => { if (!input.trim()) setInput(charterExamples[playRequest.stage || 'interests']) }}
-              placeholder="告诉我你想去哪，或者问问贵州怎么玩"
-
-              autoComplete="off"
-            />
-            <button className="send-button" type="submit" aria-label="发送问题"><ArrowUpIcon weight="bold" /></button>
-          </div>
-        </form>
       </main>
+
+      {activeGuide.name !== '龙师傅' && <ConversationComposer key={activeGuide.name} input={contactDraft} setInput={setContactDraft} guideName={activeGuide.name} suspended={!!(storeOpen || selectedRoute || accountPage || drawerOpen || contact)} onSend={event => { event.preventDefault(); if (!contactDraft.trim()) return; setContactMessages(current => ({ ...current, [activeGuide.name]: [...(current[activeGuide.name] || []), contactDraft.trim()] })); setContactDraft(''); requestAnimationFrame(() => homeRef.current?.scrollTo({ top: homeRef.current.scrollHeight })); }} />}
 
       <div className={`drawer-layer ${drawerOpen ? 'open' : ''}`} aria-hidden={!drawerOpen} inert={!drawerOpen}>
         <button className="drawer-scrim" type="button" onClick={() => setDrawerOpen(false)} aria-label="关闭侧边栏" />
         <aside className="drawer" aria-label="侧边栏导航">
-          <div className="drawer-header"><strong>个人智能体</strong><button type="button" onClick={() => setDrawerOpen(false)} aria-label="关闭"><XIcon /></button></div>
-          <nav>
-            {drawerItems.map(({ label, icon: Icon }) => <button type="button" key={label} onClick={() => { setDrawerOpen(false); setHomeReturnPage(null); setAccountPage(label) }}><span><Icon /></span>{label}<CaretRightIcon /></button>)}
-          </nav>
-          <button className="drawer-profile" type="button" onClick={() => { setDrawerOpen(false); setHomeReturnPage(null); setAccountPage('个人页') }}>
-            <img src={profile.image} alt={`游客${profile.name}`} loading="lazy" decoding="async" />
-            <span><strong>{profile.name}</strong><small>游客</small></span><CaretRightIcon />
-          </button>
+          <div className="drawer-header"><strong>虾片AI</strong></div>
+          <div className="drawer-contacts">{renderContactCollection(true)}</div>
+          <div className="drawer-footer">
+            <button className="drawer-profile" type="button" aria-label="我的" onClick={() => { setDrawerOpen(false); setHomeReturnPage(null); setAccountPage('个人页') }}>
+              <img src={profile.image} alt={`游客${profile.name}`} /><span><strong>{profile.name}</strong></span>
+            </button>
+            <button className="drawer-notifications" type="button" aria-label="通知"><BellIcon /></button>
+          </div>
         </aside>
       </div>
 
       {accountPage && (
-        <section className="account-page" role="dialog" aria-modal="true" aria-label={accountPage}>
+        <section className="account-page" inert={storeOpen} role="dialog" aria-modal="true" aria-label={accountPage}>
           <header className={accountPage === '编辑资料' ? 'profile-edit-header' : ''}>
-            <button type="button" aria-label={accountPage === '编辑资料' ? '返回我的' : '返回侧边栏'} onClick={() => { if (accountPage === '编辑资料') { setAccountPage('个人页'); return } setAccountPage(null); setDrawerOpen(true) }}><ArrowLeftIcon /></button>
+            <button type="button" aria-label={['编辑资料', '我的订单'].includes(accountPage) ? '返回我的' : '返回侧边栏'} onClick={() => { if (['编辑资料', '我的订单'].includes(accountPage)) { setAccountPage('个人页'); return } setAccountPage(null); setDrawerOpen(true) }}><ArrowLeftIcon /></button>
             <h1>{accountPage === '个人页' ? '我的' : accountPage}</h1>
             {accountPage === '编辑资料' && <button className="profile-save-button" type="submit" form="profile-edit-form">保存</button>}
           </header>
@@ -698,6 +538,7 @@ function App() {
               <div><h2>{profile.name}</h2><span>编辑资料</span></div>
               <CaretRightIcon aria-hidden="true" />
             </button>
+            <section className="my-menu-card"><button type="button" onClick={() => setAccountPage('我的订单')}><ReceiptIcon /><span>我的订单</span><CaretRightIcon /></button></section>
             <section className="my-menu-card"><button type="button" onClick={() => setToast('已为你连接在线客服')}><HeadphonesIcon /><span>客服</span><CaretRightIcon /></button><button type="button" onClick={() => setToast('设置功能开发中')}><GearIcon /><span>设置</span><CaretRightIcon /></button></section>
             <button className="logout-button" type="button" onClick={() => setToast('已退出登录')}><SignOutIcon />退出登录</button>
           </div>
@@ -711,7 +552,6 @@ function App() {
                 <input id="profile-name-input" value={profileDraft.name} onChange={(event) => setProfileDraft((current) => ({ ...current, name: event.target.value }))} maxLength="12" autoComplete="nickname" />
               </section>
             </form>
-            : accountPage === '我的行程' ? <div className="account-collection trip-collection">{tripGroups.map((group) => <section className="account-section" key={group.title}><div className="account-section-title"><h2>{group.title}</h2></div>{group.trips.map((trip) => <TripProgressCard key={`${group.title}-${trip.name}`} trip={trip} className="account-trip-progress" onCall={() => setContact({kind:'phone',context:`${trip.name}·${trip.date}`})} />)}</section>)}</div>
             : accountPage === '我的订单' ? <div className="order-page-content">
               <nav className="order-tabs" aria-label="订单类型">{orderTabs.map((tab) => <button type="button" key={tab} aria-current={orderFilter === tab ? 'page' : undefined} onClick={() => setOrderFilter(tab)}>{tab}</button>)}</nav>
               <div className="account-collection order-collection">{visibleOrders.map((order) => <article className="order-card" key={order.id}>
@@ -720,22 +560,13 @@ function App() {
                 <footer className="order-card-actions"><strong>￥{order.amount}</strong><div>{order.status !== '退款/售后' && order.status !== '待付款' && <button type="button" onClick={() => setToast('已进入退款/售后服务')}>退款/售后</button>}{order.status === '待付款' && <button className="primary-outline" type="button" onClick={() => setToast('已进入付款页面')}>去付款</button>}</div></footer>
               </article>)}{!visibleOrders.length && <p className="order-empty">暂无{orderFilter}订单</p>}</div>
             </div>
-            : accountPage === '名片夹' ? <div className="account-collection contact-collection">
-              <label className="contact-search"><MagnifyingGlassIcon aria-hidden="true" /><input type="search" value={cardSearch} onChange={(event) => setCardSearch(event.target.value)} placeholder="搜索名片" aria-label="搜索名片" /></label>
-              {visibleCards.map((card) => <article className="contact-card" key={card.name}>
-                <button className="contact-card-main" type="button" onClick={() => openContactCard(card)}>
-                  {card.image ? <img src={card.image} alt={card.name} /> : <span className={`contact-initial ${card.tone}`}>{card.initials}</span>}
-                  <span className="contact-copy"><span className="contact-name"><strong>{card.name}</strong><small>{card.role}</small></span><em>{card.lastMessage}</em></span>
-                </button>
-                <button className={`contact-favorite${favoriteCards.has(card.name) ? ' is-favorite' : ''}`} type="button" aria-label={`${favoriteCards.has(card.name) ? '取消收藏' : '收藏'}${card.name}的名片`} aria-pressed={favoriteCards.has(card.name)} onClick={() => { setFavoriteCards((current) => { const next = new Set(current); next.has(card.name) ? next.delete(card.name) : next.add(card.name); return next }); setToast(`${favoriteCards.has(card.name) ? '已取消收藏' : '已收藏'}${card.name}的名片`) }}><HeartIcon weight={favoriteCards.has(card.name) ? 'fill' : 'regular'} /></button>
-              </article>)}
-              {!visibleCards.length && <p className="contact-empty">没有找到相关名片</p>}
-            </div>
+            : accountPage === '名片夹' ? renderContactCollection()
             : <div className="account-info"><h2>关于</h2><p>贵旅出行 · 文旅推荐官</p><p>版本 1.0</p></div>}
         </section>
       )}
 
-      {storeOpen && <Storefront inactive={!!selectedRoute} products={recommendations} onClose={() => setStoreOpen(false)} onOpen={product => { setSelectedRoute(product); setBookingOpen(false) }} />}
+      {storeOpen && <Storefront backgroundImage={activeGuide.name === '罗文静' ? '/assets/profile-terraces.jpg' : '/assets/profile-waterfall.jpg'} backgroundAlt={activeGuide.name === '罗文静' ? '云雾中的梯田与村落' : '群山绿树环绕的瀑布'} guideName={activeGuide.name} backLabel={accountPage === '名片夹' ? '返回名片夹' : '返回对话'} profileCard={renderGuideCard(true)} inactive={!!(selectedRoute || contact || shareOpen)} products={recommendations} onClose={() => setStoreOpen(false)} onOpen={product => { setSelectedRoute(product); setBookingOpen(false) }} />}
+      {shareOpen && <ShareGuideSheet guide={activeGuide} onClose={() => setShareOpen(false)} />}
       {contact && <ContactSheet {...contact} onClose={() => setContact(null)} />}
       {selectedRoute && (
         <div className="route-detail-layer" role="dialog" aria-modal="true" aria-label={`${selectedRoute.name}详情`}>
@@ -826,13 +657,13 @@ function App() {
 
             {selectedRoute.detailImage && <footer className="route-bottom-cta route-poster-cta">
               <div className="route-reference-price"><span>参考价</span><strong>￥{selectedRoute.referencePrice}</strong></div>
-              <button className="route-book-button" type="button" onClick={() => setContact({kind:'wechat',context:selectedRoute.name})}>定制咨询</button>
+              <button className="route-book-button" type="button" >定制咨询</button>
             </footer>}
 
             {!selectedRoute.detailImage && <footer className={`route-bottom-cta${selectedRoute.charter ? ' route-charter-cta' : ''}`}>
               <div className="route-detail-price">{selectedRoute.priceLabel ? <strong>{selectedRoute.priceLabel}</strong> : <><strong>￥{selectedRoute.price}</strong><span>/{selectedRoute.unit}</span></>}</div>
-              {selectedRoute.charter && <button className="route-chat-button" type="button" onClick={() => setContact({kind:'wechat',context:selectedRoute.name})}>聊一聊</button>}
-              <button className="route-book-button" type="button" onClick={() => selectedRoute.charter ? setBookingOpen(true) : setContact({kind:'wechat',context:selectedRoute.name})}>{selectedRoute.charter ? '立即下单' : '定制咨询'}</button>
+              {selectedRoute.charter && <button className="route-chat-button" type="button" onClick={() => openConsultation()}>聊一聊</button>}
+              <button className="route-book-button" type="button" onClick={selectedRoute.charter ? () => setBookingOpen(true) : undefined}>{selectedRoute.charter ? '立即下单' : '定制咨询'}</button>
             </footer>}
 
             {!selectedRoute.detailImage && bookingOpen && (

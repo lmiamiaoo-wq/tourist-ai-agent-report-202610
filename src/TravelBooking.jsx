@@ -208,32 +208,32 @@ export function CharterForm({ value, onChange, onSubmit }) {
   </section>
 }
 
-export function ContactSheet({ kind, onClose, context }) {
+export function ContactSheet({ onClose, context }) {
   const [state, setState] = useState('ready')
-  const phone = kind === 'phone'
   useEffect(() => {
     if (state !== 'calling') return
     const timer = window.setTimeout(() => setState('connected'), 1200)
     return () => window.clearTimeout(timer)
   }, [state])
-  return <TravelSheet title={phone ? '联系司机' : '定制咨询'} onClose={onClose}>
-    <div className="contact-sheet-content"><img className="contact-avatar" src="/assets/yang-tonghai-avatar.png" alt="杨通海" /><h3>{phone ? '杨通海 · 专属司机' : '贵旅出行 · 运营客服'}</h3>{context && <p>{context}</p>}
-      <p aria-live="polite">{phone ? ({ready:'联系司机，沟通出行安排',calling:'正在呼叫…',connected:'通话中',ended:'通话已结束'})[state] : state === 'copied' ? '微信号已复制' : '添加运营微信，确认线路余位与行程安排'}</p>
-      <button className="travel-primary" onClick={() => phone ? setState(state==='calling' || state==='connected' ? 'ended' : 'calling') : setState('copied')}>{phone ? state==='calling' || state==='connected' ? '挂断' : '拨打电话' : state==='copied' ? '已复制微信号' : '复制运营微信号'}</button>
+  return <TravelSheet title="联系司机" onClose={onClose}>
+    <div className="contact-sheet-content"><img className="contact-avatar" src="/assets/yang-tonghai-avatar.png" alt="龙师傅" /><h3>龙师傅 · 专属司机</h3>{context && <p>{context}</p>}
+      <p aria-live="polite">{({ready:'联系司机，沟通出行安排',calling:'正在呼叫…',connected:'通话中',ended:'通话已结束'})[state]}</p>
+      <button className="travel-primary" onClick={() => setState(state==='calling' || state==='connected' ? 'ended' : 'calling')}>{state==='calling' || state==='connected' ? '挂断' : '拨打电话'}</button>
     </div>
   </TravelSheet>
 }
 
-export function Storefront({ products, onClose, onOpen, inactive }) {
-  const [filter, setFilter] = useState('司机服务')
-  const visible = products.filter(product => filter === '司机服务' ? !!product.charter : !product.charter)
-  return <section className="driver-store" inert={inactive} aria-label="司机橱窗">
-    <header>
-      <button className="store-back" onClick={onClose} aria-label="返回首页"><ArrowLeftIcon /></button>
-      <nav className="store-filters" aria-label="橱窗分类">{['司机服务','线路'].map(item=><button key={item} aria-pressed={item===filter} onClick={()=>setFilter(item)}>{item}</button>)}</nav>
-    </header>
+export function Storefront({ products, onClose, onOpen, inactive, profileCard, backgroundImage, backgroundAlt, guideName = '龙师傅', backLabel = '返回对话' }) {
+  const [filter, setFilter] = useState('服务')
+  const [profileScrolled, setProfileScrolled] = useState(false)
+  const visible = products.filter(product => filter === '服务' ? !!product.charter : !product.charter)
+  return <><section className={`driver-store driver-profile-page${profileScrolled ? ' profile-scrolled' : ''}`} inert={inactive} aria-label={`${guideName}个人主页`} onScroll={event => setProfileScrolled(event.currentTarget.scrollTop > 0)}>
+    <header className="profile-topbar"><button className="store-back" onClick={onClose} aria-label={backLabel}><ArrowLeftIcon /></button><strong>{guideName}的主页</strong></header>
+    <div className="hero"><img className="hero-image" src={backgroundImage} alt={backgroundAlt} /><div className="hero-scrim" /></div>
+    <div className="content-flow">{profileCard}</div>
     <div className="store-content">
-      <div className="store-products">{visible.map(product=><button className={`store-product ${product.charter ? 'store-product-charter' : 'store-product-route'}`} key={product.id} onClick={()=>onOpen(product)}><img src={product.image} alt={product.name}/><span><strong>{product.cardName || product.name}</strong><p>{product.cardDescription || product.intro}</p>{(product.referencePrice || product.priceLabel || product.price) && <b>{product.referencePrice ? <>参考价 ￥{product.referencePrice}</> : product.priceLabel || <>¥{product.price}<small>/{product.unit}</small></>}</b>}</span></button>)}</div>
+      <nav className="store-filters" role="tablist" aria-label="橱窗分类">{['服务','商品'].map(item=><button key={item} role="tab" aria-selected={item===filter} aria-pressed={item===filter} onClick={()=>setFilter(item)}>{item}</button>)}</nav>
+      <div className="store-products">{visible.map(product=><button className={`store-product ${product.charter ? 'store-product-charter' : 'store-product-route'}`} key={product.id} onClick={()=>onOpen(product)}><img src={product.image} alt={product.name}/><span><strong>{product.cardName || product.name}</strong><p>{product.cardDescription || product.intro}</p>{(product.referencePrice || product.priceLabel || product.price) && <b>{product.referencePrice ? <><small>参考价 ￥</small>{product.referencePrice}</> : <><small>￥</small>{product.price || product.priceLabel?.replace(/^[￥¥]/, "")}{!product.priceLabel && <small>/{product.unit}</small>}</>}</b>}</span></button>)}</div>
     </div>
-  </section>
+  </section></>
 }
