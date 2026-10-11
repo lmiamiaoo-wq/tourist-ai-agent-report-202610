@@ -218,7 +218,7 @@ export default function JourneyDemo({ hidden = false, appRef, homeRef, suspended
             </button>)}
             {state.phase === 'plans' && !state.discountAsked && !priceReplyDismissed && <button type="button" className="journey-price-reply" onClick={() => { setPriceReplyDismissed(true); dispatch({ type: 'ASK_DISCOUNT' }) }}>价格有优惠吗<ArrowUpRightIcon aria-hidden="true" /></button>}
           </section> : message.type === 'notice' ? (message.eta ? <><article className="chat-message assistant journey-departure-copy"><p>{message.text?.replace('已经和龙师傅确认过了，', '')}</p></article>          <section className="journey-other-services" aria-label="龙师傅的其他服务">
-            <article className="chat-message assistant"><p>以后要是还想来贵州转转，点对点接送、7天6晚大环线我这边也有，您有兴趣可以先看看。</p></article>
+            <article className="chat-message assistant"><p>以后要是还想来贵州转转，定点接送、7天6晚大环线我这边也有，您有兴趣可以先看看。</p></article>
             {services.map(service => <button className="journey-service-product" key={service.id} onClick={() => onOpenService(service)}>
               <img src={service.image} alt="" /><span><strong>{service.cardName || service.name}</strong><small>{service.cardDescription || service.intro}</small><b>{service.referencePrice ? <><small>参考价 ￥</small>{service.referencePrice}</> : <><small>￥</small>{service.price || service.priceLabel?.replace(/^[￥¥]/, "")}</>}</b></span>
             </button>)}

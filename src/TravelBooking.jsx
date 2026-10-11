@@ -188,7 +188,7 @@ export function CharterForm({ value, onChange, onSubmit }) {
   return <section className="default-charter" aria-labelledby="charter-title">
     <div className="charter-section-heading"><h2 id="charter-title">预约包车</h2></div>
     <form className="default-charter-card" onSubmit={submit}>
-      <div className="charter-type" aria-label="包车类型">{['日包车','点对点包车'].map(type => <button key={type} type="button" aria-pressed={value.type===type} onClick={() => update('type',type)}>{type}</button>)}</div>
+      <div className="charter-type" aria-label="包车类型">{['日包车','定点接送'].map(type => <button key={type} type="button" aria-pressed={value.type===type} onClick={() => update('type',type)}>{type}</button>)}</div>
       <div className="charter-counters"><Counter label="包车人数" value={value.people} max={30} unit="人" onChange={n=>update('people',n)} />
       {value.type === '日包车' && <Counter label="包车天数" min={0.5} step={0.5} value={value.days} max={30} unit="天" onChange={n=>update('days',n)} />}</div>
       <div className="charter-datetime"><DepartureTimePicker date={value.date} time={value.time} onConfirm={(date, time) => { onChange({ ...value, date, time }); setError('') }} /></div>

@@ -45,14 +45,14 @@ import {
 const recommendations = [
   {
     id: 'huangguoshu',
-    name: '点对点包车',
+    name: '定点接送',
     type: '司机服务',
     price: '240',
     priceLabel: '￥240',
     unit: '天',
     image: '/assets/sunlit-mountain-lake-hero.png',
-    cardDescription: '贵阳出发·点对点包车·市区 / 景区 / 机场接送',
-    intro: '贵阳出发·点对点包车·市区 / 景区 / 机场接送',
+    cardDescription: '贵阳出发·定点接送·市区 / 景区 / 机场接送',
+    intro: '贵阳出发·定点接送·市区 / 景区 / 机场接送',
     serviceDetails: [
       { label: '司导一体', text: '本人10年以上本地驾龄司机，兼持证导游，开车讲解两不误' },
       { label: '路况熟', text: '熟悉贵阳及周边（黄果树、荔波、西江千户苗寨、梵净山、兴义等）全部路线，避开拥堵' },
@@ -67,7 +67,7 @@ const recommendations = [
     ],
     bookingFlow: ['下单付款', '司机接单', '沟通确认', '接驾出发', '行程结束'],
     pricingMethods: [
-      { label: '点对点一口价', text: '按实际行程耗时计算，起步含2小时基础服务' },
+      { label: '定点接送一口价', text: '按实际行程耗时计算，起步含2小时基础服务' },
       { label: '超时长', text: '超出基础时长按50元 / 小时加收，不足1小时按1小时计' },
       { label: '服务时段', text: '07:00–22:00正常服务；22:00–次日06:00夜间服务加收夜间费' },
       { label: '等待费', text: '客户原因导致等待，超30分钟后按30元 / 小时计' },
