@@ -9,14 +9,14 @@
 .journey-plan-card { position: relative; display: grid; grid-template-columns: 112px minmax(0, 1fr); overflow: hidden; padding: 0; text-align: left; border: 0; border-radius: 20px; background: white; color: var(--ink); cursor: pointer; }
 .journey-plan-corner { position: absolute; z-index: 1; top: 0; right: 0; width: 52px; height: 52px; pointer-events: none; color: #fff; }
 .journey-plan-corner::before { position: absolute; inset: 0; background: var(--primary-color); clip-path: polygon(0 0, 100% 0, 100% 100%); content: ''; }
-.journey-plan-corner > span { position: absolute; top: 12px; right: -10px; width: 60px; transform: rotate(45deg); text-align: center; font-size: 10px; line-height: 1.2; font-weight: 600; white-space: nowrap; }
+.journey-plan-corner > span { position: absolute; top: 12px; right: -10px; width: 60px; transform: rotate(45deg); text-align: center; font-size: 10px; line-height: 1.2; font-weight: 500; white-space: nowrap; }
 .journey-plan-content { display: flex; flex-direction: column; min-width: 0; padding: 10px 12px; }
-.journey-plan-title { display: flex; align-items: center; gap: 6px; min-width: 0; padding-right: 34px; }
-.journey-plan-title h3 { font-size: 14px; line-height: 1.4; margin: 0; font-weight: 500; letter-spacing: -.5px; white-space: nowrap; }
+.journey-plan-title { display: flex; align-items: center; gap: 6px; min-width: 0; }
+.journey-plan-title h3 { font-size: 14px; line-height: 1.4; margin: 0; font-weight: 500; letter-spacing: -.5px; white-space: normal; min-width: 0; height: 2.8em; overflow: hidden; overflow-wrap: anywhere; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
 .journey-plan-card p { color: var(--muted); font-size: 12px; font-weight: 400; line-height: 1.65; margin: 0; padding-right: 18px; }
 .journey-plan-image-wrap { position: relative; display: block; min-height: 0; margin: 8px 0 8px 8px; overflow: hidden; border-radius: calc(20px - var(--card-image-radius-inset)); }
 .journey-plan-image { position: absolute; inset: 0; display: block; width: 100%; height: 100%; object-fit: cover; object-position: center; }
-.journey-plan-number { position: absolute; top: 6px; left: 6px; padding: 4px 7px; border: 0; border-radius: 999px; background: #ffffffc7; backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); color: var(--ink); font-size: 10px; font-weight: 600; line-height: 1.2; white-space: nowrap; }
+.journey-plan-number { position: absolute; top: 6px; left: 6px; padding: 4px 7px; border: 0; border-radius: 999px; background: #ffffffc7; backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); color: var(--ink); font-size: 10px; font-weight: 500; line-height: 1.2; white-space: nowrap; }
 .journey-plan-route { display: flex; align-items: center; gap: 5px; margin: 14px 0; color: #505d79; font-size: 12px; }
 .journey-plan-route svg { width: 15px; height: 15px; }
 .journey-plan-card footer { padding-top: 0; text-align: left; }
@@ -28,7 +28,7 @@
 .journey-order header b { color: #24825f; font-weight: 500; }
 .journey-order header b.muted { color: var(--muted); }
 .journey-order-summary { display: flex; justify-content: space-between; gap: 4px; font-size: 14px; }
-.journey-order-summary strong { font-weight: 600; }
+.journey-order-summary strong { font-weight: 500; }
 .journey-order-summary small { font-size: 10px; font-weight: 400; color: var(--muted); }
 .journey-order-summary > b { color: var(--forest-deep); font-size: 14px; }
 .journey-order p { margin: 4px 0 9px; font-size: 12px; color: var(--muted); }
@@ -115,7 +115,7 @@
 .journey-payment-method p { font-size: 12px; color: var(--muted); margin: 4px 0; }
 .journey-order-status { display: flex; align-items: center; gap: 6px; color: #24825f; font-size: 12px; }
 .journey-change-form { display: grid; gap: 12px; margin-top: 24px; }
-.journey-change-form label { font-weight: 600; font-size: 14px; }
+.journey-change-form label { font-weight: 500; font-size: 14px; }
 .journey-change-form p { margin: 0; font-size: 12px; color: var(--muted); line-height: 1.7; }
 .journey-change-form .journey-error { color: #bb3450; }
 .journey-cancel { margin-top: 28px; padding-top: 4px; border-top: 1px solid var(--line); }
@@ -132,22 +132,16 @@
 .journey-plan-route { margin: 6px 0 4px; }
 .journey-plan-intro { padding: 14px 16px; }
 
-/* Plan details follow the supplied photo-led itinerary reference. */
-.journey-plan-detail { inset: 0; background: #fff; }
-.journey-plan-detail .journey-detail-nav { position: absolute; inset: var(--system-status-height) 0 auto; z-index: 2; background: transparent; }
-.journey-plan-detail .journey-detail-nav h2,
-.journey-plan-detail .journey-detail-nav > button:last-child { visibility: hidden; }
-.journey-plan-detail .journey-detail-nav > button:first-child { width: 38px; height: 38px; display: grid; place-items: center; padding: 9px; color: white; background: #53656ccc; border-radius: 50%; backdrop-filter: blur(12px); }
-.journey-plan-detail.cover-scrolled .journey-detail-nav { background: #fff; border-bottom: 1px solid var(--line); }
-.journey-plan-detail.cover-scrolled .journey-detail-nav h2 { visibility: visible; }
-.journey-plan-detail.cover-scrolled .journey-detail-nav > button:first-child { color: var(--ink); background: #f5f6fa; }
-.journey-plan-detail .journey-detail-body { padding: 0 0 24px; }
-.plan-cover { width: 100%; height: 260px; object-fit: cover; object-position: center; }
-.plan-introduction { position: relative; margin-top: -12px; padding: 16px 16px 22px; background: #fff; border-radius: 22px 22px 0 0; }
-.plan-introduction h1 { font-size: 24px; line-height: 1.4; margin: 0 0 10px; font-weight: 650; letter-spacing: 0; }
+/* Text-first article layout for the play plan. */
+.journey-plan-detail { background: #fff; }
+.journey-plan-detail .journey-detail-nav { border-bottom: 0; }
+.journey-plan-detail .journey-detail-body { padding: 0 0 calc(28px + var(--home-safe-area)); }
+.plan-introduction { margin: 0; padding: 16px; background: #fff; }
+.plan-introduction h1 { font-size: 18px; line-height: 1.5; margin: 0 0 16px; font-weight: 500; letter-spacing: 0; }
 .plan-introduction p { margin: 0; font-size: 14px; line-height: 1.8; color: var(--muted); }
+.plan-introduction .plan-author { margin-bottom: 6px; color: var(--primary-color); }
 .plan-section { margin: 0; padding: 20px 16px 18px; border-top: 8px solid #fafbfe; background: #fff; }
-.plan-section h2 { display: flex; align-items: center; gap: 8px; font-size: 16px; line-height: 1.5; font-weight: 600; margin: 0 0 16px; }
+.plan-section h2 { display: flex; align-items: center; gap: 8px; font-size: 16px; line-height: 1.5; font-weight: 500; margin: 0 0 16px; }
 .plan-section h2 > svg { width: 17px; height: 17px; color: var(--primary-color); flex: none; }
 .plan-features { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
 .plan-features li { display: flex; align-items: flex-start; gap: 10px; color: var(--muted); font-size: 14px; line-height: 1.65; }
@@ -158,25 +152,24 @@
 .plan-day-heading { display: flex; align-items: center; gap: 8px; }
 .plan-day-badge { display: grid; place-items: center; min-width: 32px; height: 30px; padding: 0 5px; border-radius: 8px; background: #edf0ff; color: var(--primary-color); font-size: 16px; font-weight: 500; }
 .plan-day-heading h3 { margin: 0; color: var(--ink); font-size: 16px; font-weight: 500; white-space: nowrap; }
-.plan-day-card header b { color: var(--ink); font-size: 14px; font-weight: 600; }
+.plan-day-card header b { color: var(--ink); font-size: 14px; font-weight: 500; }
 .plan-day-card dl, .plan-fee-card dl { display: grid; gap: 7px; margin: 0; }
 .plan-day-card dl > div { display: grid; grid-template-columns: 38px minmax(0,1fr); gap: 8px; font-size: 14px; line-height: 1.6; }
-.plan-day-card dt { color: var(--primary-color); font-weight: 600; }
+.plan-day-card dt { color: var(--primary-color); font-weight: 500; }
 .plan-day-card dd, .plan-fee-card dd { margin: 0; color: var(--muted); }
 .plan-day-card p { font-size: 14px; line-height: 1.75; color: var(--muted); margin: 14px 0 0; }
 .plan-day-card > img { display: block; width: 100%; aspect-ratio: 2.35; object-fit: cover; border-radius: 14px; margin-top: 14px; }
 .plan-fee-card + .plan-fee-card { margin-top: 14px; }
-.plan-fee-card h3 { display: flex; gap: 8px; align-items: center; font-size: 16px; font-weight: 600; margin: 0 0 14px; }
+.plan-fee-card h3 { display: flex; gap: 8px; align-items: center; font-size: 16px; font-weight: 500; margin: 0 0 14px; }
 .plan-fee-card h3 svg { width: 15px; height: 15px; flex: none; }
 .plan-fee-card.included h3, .plan-fee-card.included dt { color: var(--primary-color); }
 .plan-fee-card.included h3 svg { color: #17b978; }
 .plan-fee-card.excluded h3 svg { color: #ff4164; }
 .plan-fee-card dl > div { display: grid; grid-template-columns: 59px minmax(0,1fr); gap: 7px; font-size: 14px; line-height: 1.8; }
-.plan-fee-card dt { font-weight: 600; color: var(--muted); white-space: nowrap; }
+.plan-fee-card dt { font-weight: 500; color: var(--muted); white-space: nowrap; }
 .plan-booking-notes p { color: var(--muted); font-size: 14px; line-height: 1.8; margin: 10px 0 0; }
 .journey-plan-detail .journey-detail-footer { gap: 14px; padding: 14px 16px calc(12px + var(--home-safe-area)); border-top: 0; box-shadow: 0 -10px 30px #26306608; }
 .journey-plan-detail .journey-detail-footer strong { color: #ff4164; font-size: 24px; }
-.app-shell:has(.journey-plan-detail:not(.cover-scrolled)) > .system-status { background: transparent !important; color: #fff !important; text-shadow: 0 1px 3px #0003 !important; }
 
 .journey-change-form > h2 { margin: 0; font-size: 16px; }
 .journey-mobile-calendar { border: 1px solid #e4e8f7; border-radius: 18px; padding: 10px; background: #fafbff; }
@@ -216,9 +209,6 @@
 .journey-payment-sheet .journey-payment-total strong { color: #ff4164; font-weight: 500; }
 .journey-payment-sheet .journey-payment-total small { font-size: 14px; margin-right: 2px; }
 
-.journey-itinerary-hero { display: flex; flex-direction: column; justify-content: flex-end; min-height: 156px; border: 0; background: linear-gradient(180deg, #14222b10, #14222bbf), url('/assets/qingyan-village-panorama.png') center / cover; color: #fff; }
-.journey-itinerary-hero h1 { margin: 0 0 8px; font-size: 24px; }
-.journey-itinerary-hero > p { margin: 0; color: #fff; }
 
 /* Service recommendations and feedback reuse the existing typography and surfaces. */
 .journey-pinned-status { flex: none; color: var(--forest-deep); font-size: 12px; font-weight: 400; }
@@ -242,11 +232,12 @@
 .journey-reactions button { display: grid; justify-items: center; gap: 8px; padding: 8px 4px; border: 1px solid transparent; border-radius: var(--radius-md); background: transparent; color: var(--muted); font-size: 14px; font-weight: 400; cursor: pointer; }
 .journey-reactions img { width: 48px; height: 48px; }
 .journey-reactions button[aria-pressed='true'] { background: transparent; border-color: transparent; color: var(--forest-deep); }
-.journey-reactions button[aria-pressed='true'] span { font-weight: 600; }
+.journey-reactions button[aria-pressed='true'] span { font-weight: 500; }
 .journey-review-tags { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin-bottom: var(--space-m); }
-.journey-review-tags button { min-height: 34px; padding: 6px 4px; border: 0; border-radius: var(--radius-sm); background: var(--canvas); color: var(--ink); font-size: 12px; font-weight: 400; cursor: pointer; }
-.journey-review-tags button[aria-pressed='true'] { background: var(--forest-soft); color: var(--forest-deep); }
-.journey-review textarea { border-color: var(--line); background: var(--surface); border-radius: var(--radius-md); }
+.journey-review-tags button { min-height: 34px; padding: 6px 4px; border: 0; border-radius: var(--radius-sm); background: #fff; color: var(--ink); font-size: 12px; font-weight: 400; cursor: pointer; }
+.journey-review-tags button[aria-pressed='true'] { background: #fff; color: var(--forest-deep); box-shadow: inset 0 0 0 1px currentColor; }
+.journey-review textarea { border-color: transparent; outline: none; background: var(--surface); border-radius: var(--radius-md); }
+.journey-review textarea:focus { border-color: var(--primary-color); }
 .journey-review textarea::placeholder { color: var(--text-placeholder); opacity: 1; }
 .journey-review button:disabled { cursor: default; }
 
@@ -283,19 +274,7 @@
 .journey-day-facts > div { display: grid; grid-template-columns: 28px minmax(0, 1fr); gap: 8px; }
 .journey-day-facts dt { color: var(--text-tertiary); }
 .journey-day-facts dd { margin: 0; color: var(--muted); }
-.journey-itinerary-detail { inset: 0; }
-.journey-itinerary-detail .journey-detail-nav { position: absolute; inset: var(--system-status-height) 0 auto; z-index: 2; background: transparent; color: #fff; }
-.journey-itinerary-detail .journey-detail-nav button { color: inherit; }
-.journey-itinerary-detail.cover-scrolled .journey-detail-nav { background: #fff; color: var(--ink); }
-.journey-itinerary-detail .journey-detail-body { padding: 0 0 calc(20px + var(--home-safe-area)); }
-.journey-itinerary-detail .journey-itinerary-hero { min-height: 280px; border-radius: 0; padding: calc(var(--top-chrome-height) + 24px) 20px 24px; }
-.journey-itinerary-detail .journey-itinerary-hero h1,
-.journey-itinerary-detail .journey-itinerary-hero p { color: #fff; }
-.journey-itinerary-detail .journey-detail-section { margin: 16px; }
-.app-shell:has(.journey-itinerary-detail:not(.cover-scrolled)) > .system-status { background: transparent !important; color: #fff !important; text-shadow: 0 1px 3px #0003 !important; }
 
-.journey-itinerary-detail .journey-detail-nav h2 { visibility: hidden; }
-.journey-itinerary-detail.cover-scrolled .journey-detail-nav h2 { visibility: visible; }
 
 .journey-date-field { display: flex; align-items: center; gap: 10px; width: 100%; min-height: 48px; padding: 12px; border: 1px solid var(--line); border-radius: var(--radius-md); background: var(--surface); color: var(--ink); font: inherit; font-size: 14px; cursor: pointer; }
 .journey-date-field span { flex: 1; text-align: left; }
@@ -322,3 +301,92 @@
 }
 
 .journey-order:not(.journey-order-history) .journey-pickup-vehicle { background: #f6f7fa; }
+
+.journey-quick-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+.journey-quick-actions button { text-align: left; line-height: 1.5; }
+.journey-quick-actions button:disabled { opacity: .5; cursor: default; }
+.family-service-section ul { padding-left: 20px; line-height: 1.8; }
+.family-service-section li + li { margin-top: 10px; }
+.family-booking-form { display: grid; gap: 16px; margin-top: 20px; }
+.family-booking-form label { display: grid; gap: 8px; font-size: 14px; color: var(--muted); }
+.family-booking-form input { width: 100%; min-width: 0; padding: 12px; border: 0; border-radius: 99px; background: #f6f7fa; color: var(--ink); font: inherit; }
+.family-fee-total { display: flex; justify-content: space-between; align-items: center; }
+.family-fee-total strong { color: var(--price); font-size: 24px; }
+
+/* Photo-led charter service, following the supplied service-detail reference. */
+.journey-charter-detail { background: #fff; }
+.journey-charter-detail .journey-detail-nav { background: #fff; border-bottom: 0; }
+.journey-charter-detail .journey-detail-body { padding: 0 0 24px; background: #fff; }
+.charter-service-cover { display: block; width: 100%; aspect-ratio: 1.6; object-fit: cover; object-position: center; }
+.journey-charter-detail .journey-detail-section { margin: 0; padding: 18px 16px; border-radius: 0; background: #fff; }
+.journey-charter-detail .charter-service-intro { padding-top: 16px; padding-bottom: 16px; }
+.journey-charter-detail .charter-service-price { margin: 0 0 8px; color: var(--price); font-size: 24px; font-weight: 500; line-height: 1.3; }
+.charter-service-price small { font-size: 20px; }
+.journey-charter-detail .journey-detail-section h1 { margin: 0 0 18px; font-size: 20px; font-weight: 500; line-height: 1.5; }
+.journey-charter-detail .journey-detail-section h2 { margin: 0 0 14px; font-size: 16px; font-weight: 500; }
+.journey-charter-detail .journey-detail-section > p:not(.charter-service-price), .journey-charter-detail .family-service-section li { color: var(--ink); font-size: 14px; line-height: 1.65; }
+.journey-charter-detail .family-service-section ul { margin: 0; padding-left: 19px; }
+.journey-charter-detail .family-service-section li + li { margin-top: 12px; }
+
+
+.charter-section-divider { height: 10px; background: #f4f5f7; }
+.family-range-field { display: grid; gap: 8px; font-size: 14px; color: var(--muted); }
+.family-range-field .journey-date-field { background: #f6f7fa; line-height: 1.65; border: 0; border-radius: 99px; }
+.journey-calendar-grid button.in-range { width: 32px; height: 32px; justify-self: center; border-radius: 50%; background: var(--forest-soft); color: var(--primary-color); }
+.journey-date-sheet { max-height: calc(100% - var(--top-chrome-height)); overflow-y: auto; }
+
+.journey-range-sheet { max-height: calc(100% - 16px); }
+.journey-range-sheet .journey-calendar-grid button { height: 32px; }
+.journey-range-sheet .journey-mobile-calendar > header button { height: 32px; }
+.journey-range-sheet .journey-calendar-selected { margin-bottom: 0; padding-top: 8px; margin-top: 8px; font-size: 14px; }
+.journey-range-sheet > .journey-primary { position: sticky; bottom: 0; margin-top: 12px; }
+
+.journey-range-sheet .journey-calendar-grid button[aria-pressed=true] { width: 32px; height: 32px; justify-self: center; border-radius: 50%; }
+
+.family-passenger-field { display: grid; gap: 8px; font-size: 14px; color: var(--muted); }
+.family-passenger-stepper { display: grid; grid-template-columns: 44px minmax(0, 1fr) 44px; align-items: center; width: 100%; overflow: hidden; border: 0; border-radius: 99px; background: #f6f7fa; }
+.family-passenger-stepper button { display: grid; place-items: center; width: 44px; height: 44px; padding: 0; border: 0; background: transparent; color: var(--ink); cursor: pointer; }
+.family-passenger-stepper button svg { width: 18px; height: 18px; }
+.family-passenger-stepper button:disabled { color: var(--text-placeholder); opacity: .4; cursor: default; }
+.family-booking-form .family-passenger-stepper input { height: 44px; padding: 0; border: 0; border-radius: 0; background: transparent; text-align: center; appearance: textfield; -moz-appearance: textfield; }
+.family-passenger-stepper input::-webkit-inner-spin-button, .family-passenger-stepper input::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+.journey-charter-detail .journey-detail-footer strong { color: rgb(255, 65, 100); }
+.journey-charter-detail .journey-detail-footer .charter-price-currency { font-size: 20px; }
+
+.family-booking-form .booking-picker-field { display: grid; gap: 8px; font-size: 14px; color: var(--muted); }
+.family-booking-form .booking-picker-trigger { display: flex; align-items: center; gap: 10px; width: 100%; min-height: 48px; padding: 12px; border: 0; border-radius: 99px; background: #f6f7fa; color: var(--ink); font: inherit; line-height: 1.65; text-align: left; cursor: pointer; }
+.family-booking-form input,
+.family-booking-form .journey-date-field,
+.family-booking-form .booking-picker-trigger { padding-inline: 16px; }
+.booking-picker-trigger span { flex: 1; }
+.booking-picker-trigger svg { flex: none; width: 16px; height: 16px; color: var(--text-placeholder); }
+.family-booking-form .is-placeholder { color: var(--muted); font-weight: 400; }
+.family-booking-form input::placeholder { color: var(--muted); opacity: 1; }
+.passenger-wheel { grid-template-columns: 1fr; }
+
+.plan-timeline { list-style: none; margin: 20px 0 0; padding: 0; }
+.plan-timeline-item { position: relative; display: grid; grid-template-columns: 24px minmax(0, 1fr); column-gap: 12px; padding-bottom: 24px; }
+.plan-timeline-item:not(:last-child)::before { content: ''; position: absolute; left: 11px; top: 30px; bottom: 6px; width: 1px; background: var(--line); }
+.plan-timeline-item:last-child { padding-bottom: 0; }
+.plan-timeline-icon { display: grid; place-items: center; width: 24px; height: 24px; color: var(--primary-color); }
+.plan-timeline-icon svg { width: 21px; height: 21px; }
+.plan-timeline-content { min-width: 0; }
+.plan-timeline-content h4 { margin: 0; font-size: 16px; font-weight: 500; line-height: 24px; color: var(--ink); }
+.plan-timeline-content time { font-variant-numeric: tabular-nums; }
+.plan-timeline-content p { margin: 10px 0 0; }
+.plan-day-service-note { padding-top: 12px; border-top: 1px solid var(--line); }
+
+.journey-charter-detail .journey-detail-footer strong { font-weight: 500; }
+
+.journey-family-plan > span > strong { display: block; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+
+.journey-plan-detail .plan-section { padding: 24px 16px; border-top: 10px solid #f4f5f7; }
+.journey-plan-detail .plan-day-service-note { border-top: 0; }
+.journey-plan-detail .plan-day-card > h3 { font-size: 16px; line-height: 1.65; }
+.journey-plan-detail .plan-timeline-content p { color: var(--text-secondary, var(--muted)); line-height: 1.8; }
+
+/* Chat prices use larger supporting text than storefront and detail prices. */
+.chat-messages { --price-affix-reduction: 4px; }
+
+/* Hang the opening bracket so the itinerary title optically aligns with the text below. */
+.journey-itinerary-detail .plan-introduction h1 { text-indent: -.5em; }

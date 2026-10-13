@@ -22,7 +22,7 @@
 .default-charter-card { padding: var(--space-m); border-radius: var(--radius-card); background: var(--surface); box-shadow: var(--card-shadow); }
 .charter-type, .store-filters { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-xxs); padding: var(--space-xxs); border-radius: var(--radius-md); background: var(--forest-mist); }
 .charter-type button, .store-filters button { border: 0; min-height: 40px; border-radius: var(--radius-sm); background: transparent; color: var(--muted); font-size: 14px; }
-.charter-type button[aria-pressed=true], .store-filters button[aria-pressed=true] { background: var(--forest-soft); color: var(--forest-deep); font-weight: 600; }
+.charter-type button[aria-pressed=true], .store-filters button[aria-pressed=true] { background: var(--forest-soft); color: var(--forest-deep); font-weight: 500; }
 .charter-type button[aria-pressed=true] { background: #fff; }
 .charter-form-row { display: flex; align-items: center; justify-content: space-between; min-height: 54px; border-bottom: 1px solid var(--line); gap: var(--space-xs); }
 .charter-form-row > span { font-size: 14px; font-weight: 400; }
@@ -49,7 +49,7 @@
 .charter-action-row { display: flex; align-items: center; justify-content: space-between; gap: var(--space-s); margin-top: var(--space-m); }
 .charter-action-row > .travel-primary { width: 50%; min-width: 0; flex: none; }
 .form-error { color: var(--price); font-size: 14px; margin: var(--space-s) 0; }
-.travel-sheet-backdrop { position: fixed; top: calc(var(--app-canvas-top) + var(--system-status-height)); left: 50%; width: min(var(--mobile-width), 100vw); height: calc(var(--app-canvas-height) - var(--system-status-height)); transform: translateX(-50%); overflow: hidden; background: var(--overlay-scrim); z-index: 150; }
+.travel-sheet-backdrop { position: fixed; top: var(--app-canvas-top); left: 50%; width: min(var(--mobile-width), 100vw); height: var(--app-canvas-height); transform: translateX(-50%); overflow: hidden; background: var(--overlay-scrim); z-index: 150; }
 .travel-sheet { position: absolute; bottom: 0; left: 0; right: 0; width: 100%; max-height: calc(var(--app-canvas-height) - var(--system-status-height) - 16px); margin: auto; display: flex; flex-direction: column; border-radius: var(--radius-sheet) var(--radius-sheet) 0 0; background: var(--surface); box-shadow: var(--sheet-shadow); color: var(--ink); overflow: hidden; }
 .travel-sheet > header { display: flex; flex: 0 0 auto; align-items: center; justify-content: space-between; padding: var(--space-m); border-bottom: 1px solid var(--line); }
 .travel-sheet h2 { margin: 0; font-size: var(--title-size); font-weight: var(--title-weight); line-height: var(--title-line-height); }
@@ -59,12 +59,12 @@
 .departure-time-sheet { height: min(430px, calc(var(--app-canvas-height) - var(--system-status-height))); }
 .departure-time-sheet > header { padding: var(--space-m); border-bottom: 1px solid var(--line); }
 .departure-time-sheet > header h2 { font-size: var(--title-size); line-height: var(--title-line-height); font-weight: var(--title-weight); }
-.departure-time-sheet > header button { background: transparent; color: var(--ink); }
+.departure-time-sheet > header button { background: var(--forest-mist); color: var(--muted); }
 .time-wheel { position: relative; min-height: 220px; display: grid; grid-template-columns: 1.65fr 1fr 1fr; overflow: hidden; -webkit-mask-image: linear-gradient(to bottom, transparent, #000 22%, #000 78%, transparent); mask-image: linear-gradient(to bottom, transparent, #000 22%, #000 78%, transparent); }
 .time-wheel-column { position: relative; z-index: 1; height: 220px; padding-block: 88px; overflow-x: hidden; overflow-y: auto; scrollbar-width: none; scroll-snap-type: y mandatory; overscroll-behavior: contain; touch-action: pan-y; }
 .time-wheel-column::-webkit-scrollbar { display: none; }
 .time-wheel-column > button { width: 100%; height: 44px; padding: 0 var(--space-xxs); border: 0; display: block; scroll-snap-align: center; background: transparent; color: var(--text-tertiary); font-size: 14px; font-weight: 400; line-height: 44px; text-align: center; white-space: nowrap; }
-.time-wheel-column > button[aria-selected="true"] { color: var(--ink); font-size: 16px; font-weight: 600; }
+.time-wheel-column > button[aria-selected="true"] { color: var(--ink); font-size: 16px; font-weight: 500; }
 .time-wheel-selection { position: absolute; z-index: 0; top: 88px; left: 0; right: 0; height: 44px; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); background: #fafbfe; pointer-events: none; }
 .departure-time-sheet > footer { margin-top: auto; padding-top: var(--space-s); }
 .location-sheet { height: min(740px, calc(var(--app-canvas-height) - 70px)); }
@@ -117,13 +117,13 @@
 .route-timeline li::before { position: absolute; top: 5px; left: 1px; width: 7px; height: 7px; border: 2px solid var(--forest-deep); border-radius: 50%; background: #fff; content: ''; }
 .route-timeline li:not(:last-child)::after { position: absolute; top: 13px; bottom: -4px; left: 4px; width: 1px; background: rgba(114, 134, 255,.32); content: ''; }
 .chat-order-section { padding: var(--space-m); border-top: 1px solid var(--line); }
-.chat-order-section h4 { margin: 0; font-size: 16px; font-weight: 600; }
+.chat-order-section h4 { margin: 0; font-size: 16px; font-weight: 500; }
 .route-section .route-timeline { margin-top: var(--space-s); }
 .chat-order-section.route-section { display: grid; gap: 4px; }
 .chat-trip-progress .progress-route,
 .account-trip-progress .progress-route { display: block; }
 .chat-order-section.route-section h4,
-.progress-route h4 { margin: 0; font-size: 16px; font-weight: 600; line-height: 21px; }
+.progress-route h4 { margin: 0; font-size: 16px; font-weight: 500; line-height: 21px; }
 .account-trip-progress .progress-route h4 { font-size: 14px; }
 .chat-order-route-inline,
 .progress-route-inline { margin: 0; color: var(--ink); font-size: 12px; line-height: 18px; overflow-wrap: anywhere; }
@@ -177,12 +177,12 @@
 .chat-order-confirmation { overflow: hidden; border: 1px solid #fff; border-radius: var(--radius-lg); background: #fff; box-shadow: none; }
 .confirmation-status { padding: var(--space-m); background: var(--forest-soft); }
 .confirmation-status > div { display: grid; gap: 2px; }
-.confirmation-status strong { font-size: 16px; font-weight: 600; }
+.confirmation-status strong { font-size: 16px; font-weight: 500; }
 .confirmation-status small { color: var(--muted); font-size: 12px; }
 .confirmation-assignment { margin: var(--space-m); padding: var(--space-s); border-radius: var(--radius-md); background: #f7f8fb; }
 .confirmation-vehicle { display: grid; grid-template-columns: minmax(0, 1fr) 48%; align-items: center; gap: var(--space-s); }
 .confirmation-vehicle > div { min-width: 0; display: grid; gap: 4px; }
-.confirmation-vehicle strong { font-size: 16px; font-weight: 600; line-height: 1.3; }
+.confirmation-vehicle strong { font-size: 16px; font-weight: 500; line-height: 1.3; }
 .confirmation-vehicle span { font-size: 12px; color: var(--ink); }
 .confirmation-vehicle img { width: 100%; height: 78px; object-fit: contain; }
 .confirmation-driver { display: grid; grid-template-columns: 40px minmax(0, 1fr) auto; align-items: center; gap: var(--space-s); margin-top: var(--space-xs); padding-top: var(--space-s); border-top: 1px solid var(--line); }
@@ -204,7 +204,7 @@
 .chat-trip-progress > header { display: flex; align-items: center; justify-content: space-between; gap: var(--space-s); padding: var(--space-m); background: var(--forest-soft); }
 .chat-trip-progress > header > div { min-width: 0; display: grid; gap: 2px; }
 .chat-trip-progress > header small { color: var(--muted); font-size: 12px; }
-.chat-trip-progress > header strong { font-size: 16px; font-weight: 600; }
+.chat-trip-progress > header strong { font-size: 16px; font-weight: 500; }
 .chat-trip-progress > header > span { flex: 0 0 auto; padding: 4px 10px; border-radius: var(--radius-pill); background: var(--primary-action); color: #fff; font-size: 12px; font-weight: 500; }
 .account-trip-progress > header > span.upcoming { background: rgba(114, 134, 255, .14); color: var(--forest-deep); }
 .account-trip-progress > header > span.pending { background: rgba(255, 172, 64, .16); color: #a96000; }
@@ -220,7 +220,7 @@
 .trip-progress-assignment { margin: 0 var(--space-m) var(--space-m); padding: var(--space-s); border-radius: var(--radius-md); background: #f7f8fb; }
 .trip-progress-vehicle { display: grid; grid-template-columns: minmax(0, 1fr) 48%; align-items: center; gap: var(--space-s); }
 .trip-progress-vehicle > div { min-width: 0; display: grid; gap: 4px; }
-.trip-progress-vehicle strong { font-size: 16px; font-weight: 600; line-height: 1.3; }
+.trip-progress-vehicle strong { font-size: 16px; font-weight: 500; line-height: 1.3; }
 .trip-progress-vehicle span { color: var(--ink); font-size: 12px; }
 .trip-progress-vehicle img { width: 100%; height: 78px; object-fit: contain; }
 .trip-progress-driver { display: grid; grid-template-columns: 40px minmax(0, 1fr) auto; align-items: center; gap: var(--space-s); margin-top: var(--space-xs); padding-top: var(--space-s); border-top: 1px solid var(--line); }
@@ -257,9 +257,9 @@ nav.store-filters button[aria-pressed=true]::after { position: absolute; right: 
 .store-product { position: relative; min-height: 144px; padding: 12px; border: 0; border-radius: var(--radius-card); overflow: hidden; display: grid; grid-template-columns: 116px minmax(0, 1fr); align-items: stretch; gap: 14px; background: var(--surface); color: var(--ink); text-align: left; box-shadow: var(--card-shadow); }
 .store-product > img { width: 116px; height: 100%; min-height: 120px; border-radius: var(--radius-md); object-fit: cover; }
 .store-product > span { min-width: 0; padding: 2px 0; display: flex; flex-direction: column; align-items: flex-start; }
-.store-product strong { display: block; font-size: 16px; font-weight: 600; }
+.store-product strong { display: block; font-size: 16px; font-weight: 500; }
 .store-product p { display: -webkit-box; margin: 5px 0 8px; overflow: hidden; color: var(--muted); font-size: 14px; font-weight: 400; line-height: 1.45; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
-.store-product b { margin-top: auto; font-size: 20px; color: var(--price); }
+.store-product b { display: inline-flex; align-items: baseline; gap: 2px; margin-top: auto; font-size: 20px; line-height: 1.2; white-space: nowrap; color: var(--price); }
 .store-product b small { font-size: 12px; font-weight: 400; }
 .store-product {
   min-height: 120px;
@@ -280,9 +280,9 @@ nav.store-filters button[aria-pressed=true]::after { position: absolute; right: 
 .store-product-charter > span { height: 96px; align-self: center; }
 .store-product strong { font-size: 16px; font-weight: 500; }
 .store-product p { margin: 4px 0 0; font-size: 14px; line-height: 1.5; }
-.store-product-route b { margin-top: auto; font-size: 16px; line-height: 1.2; font-weight: 500; }
+.store-product-route b { margin-top: auto; font-size: 20px; line-height: 1.2; font-weight: 500; }
 .store-product-route b small { font-size: 14px; }
-.store-product-charter b { font-size: 16px; font-weight: 500; }
+.store-product-charter b { font-size: 20px; font-weight: 500; }
 .app-shell:has(.driver-store) .home-screen { overflow-y: hidden; }
 @media(max-width:374px) { .charter-section-heading > span { display:none; } .location-map-stage { flex-basis: 270px; } }
 
@@ -326,7 +326,7 @@ nav.store-filters button[aria-pressed=true]::after { position: absolute; right: 
 .charter-needs textarea:focus-visible { outline: 2px solid var(--forest); outline-offset: 2px; }
 .charter-amount { min-width: 0; display: flex; flex-direction: column; align-items: flex-start; gap: 2px; }
 .charter-amount > span { font-size: 14px; font-weight: 400; }
-.charter-amount > strong { font-size: 24px; line-height: 1; font-weight: 600; color: var(--price); font-variant-numeric: tabular-nums; }
+.charter-amount > strong { font-size: 24px; line-height: 1; font-weight: 500; color: var(--price); font-variant-numeric: tabular-nums; }
 .charter-amount > strong small { font-size: 14px; margin-right: var(--space-xxs); }
 .departure-help { margin: var(--space-xs) var(--space-m) 0; font-size: 12px; color: var(--muted); }
 
@@ -602,3 +602,54 @@ button.compact-driver-title[aria-hidden='true'] { pointer-events: none; }
 /* Service, product and review cards share a compact corner treatment. */
 .store-product, .journey-service-product, .journey-review { --radius-card: 16px; --radius-card-image: calc(var(--radius-card) - var(--card-image-radius-inset)); border-radius: var(--radius-card); }
 .journey-review img { border-radius: var(--radius-card-image); }
+
+/* Transfer service shares the daily-charter detail hierarchy. */
+.transfer-service-detail .route-detail-topbar { top: var(--system-status-height); height: var(--topbar-height); display: grid; grid-template-columns: 42px 1fr 42px; padding: 0 12px; background: #fff; box-shadow: none; }
+.transfer-service-detail .route-detail-topbar h2 { grid-column: 2; margin: 0; text-align: center; color: var(--ink); font-size: var(--page-title-size); font-weight: var(--page-title-weight); }
+.transfer-service-detail .route-detail-topbar button { background: transparent; color: var(--ink); border: 0; box-shadow: none; }
+.transfer-service-detail .charter-detail-scroll { padding-top: var(--top-chrome-height); background: #fff; }
+.transfer-service-detail .route-detail-hero { height: auto; aspect-ratio: 1.6; }
+.transfer-service-detail .route-detail-hero > img { object-position: center; }
+.transfer-service-detail .route-detail-overlay { display: none; }
+.transfer-service-detail .route-product-info { margin: 0; border-radius: 0; padding: 16px; }
+.transfer-service-detail .route-product-info h1 { font-size: 20px; font-weight: 500; line-height: 1.5; }
+.transfer-service-detail .route-product-info .transfer-service-price { margin: 0 0 8px; color: #ff4164; font-size: 24px; font-weight: 500; line-height: 1.3; }
+.transfer-service-price small { font-size: 20px; }
+.transfer-service-section { padding: 18px 16px; color: var(--ink); background: #fff; font-size: 14px; line-height: 1.65; }
+.transfer-service-section h2 { margin: 0 0 14px; font-size: 16px; font-weight: 500; }
+.transfer-service-section p { margin: 0; }
+.transfer-service-section ul { margin: 0; padding-left: 19px; }
+.transfer-service-section p + ul { margin-top: 12px; }
+.transfer-service-section li + li { margin-top: 12px; }
+.transfer-service-detail .route-bottom-cta { background: #fff; }
+.transfer-service-detail .route-detail-price strong { color: #ff4164; }
+.app-shell.detail-active:has(.transfer-service-detail) > .system-status { background: #fff; color: var(--ink); text-shadow: none; }
+.app-shell.detail-active .transfer-service-detail .route-detail-scroll { padding-top: var(--top-chrome-height); }
+.app-shell.detail-active .transfer-service-detail .route-detail-topbar { position: absolute; width: 100%; padding: 0 12px; background: #fff; }
+.app-shell.detail-active .transfer-service-detail .route-detail-topbar button { background: transparent; border: 0; color: var(--ink); box-shadow: none; }
+
+/* Reuse the charter booking controls at every mobile width. */
+.transfer-service-detail .family-booking-form { margin-top: 20px; }
+.transfer-date-backdrop { z-index: 150; }
+.transfer-booking-summary p { margin: 0; font-size: 14px; line-height: 1.6; }
+
+.time-wheel.passenger-wheel { grid-template-columns: minmax(0, 1fr); }
+.journey-date-sheet > header .sheet-close { flex: none; display: grid; place-items: center; width: 36px; height: 36px; padding: 0; border: 0; border-radius: 50%; background: var(--forest-mist); color: var(--muted); }
+.sheet-close svg { width: 20px; height: 20px; }
+
+
+.transfer-time-picker { margin-top: 16px; font-size: 14px; color: var(--muted); }
+.time-wheel.transfer-clock-wheel { grid-template-columns: repeat(2, minmax(0, 1fr)); width: 100%; }
+
+.transfer-time-trigger { margin-top: 8px; border: 0; border-radius: 99px; background: #f6f7fa; }
+
+/* Sheets dim the entire phone canvas while system icons stay readable above it. */
+.journey-detail > .journey-payment-backdrop { top: calc(-1 * var(--system-status-height)); }
+.app-shell:has(.journey-payment-backdrop, .booking-sheet) > .system-status,
+body:has(.travel-sheet-backdrop, .chat-calendar-layer) .app-shell > .system-status { background: transparent !important; text-shadow: none !important; }
+.chat-calendar-layer { top: var(--app-canvas-top); height: var(--app-canvas-height); }
+/* Keep scrolling page text below system chrome; the modal scrim sits above this base. */
+.route-detail-layer:has(.transfer-service-detail, .booking-sheet)::before { content: ''; position: absolute; inset: 0 0 auto; height: var(--system-status-height); z-index: 10; background: #fff; pointer-events: none; }
+.app-shell:has(.journey-detail .journey-payment-backdrop)::before { content: ''; position: absolute; inset: 0 0 auto; height: var(--system-status-height); z-index: 50; background: #fff; pointer-events: none; }
+
+.store-product > span > strong { width: 100%; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }

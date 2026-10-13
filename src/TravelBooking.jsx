@@ -1,3 +1,4 @@
+import Price from './Price'
 import { charterAmount, earliestDeparture, localDeparture, validDeparture } from './charterPricing'
 import React, { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
@@ -55,7 +56,7 @@ const dateWheelOptions = minimum => Array.from({ length: 14 }, (_, index) => {
   return { value: toLocalDate(date), label: `${padTime(date.getMonth() + 1)}月${padTime(date.getDate())}日 ${weekday}` }
 })
 
-function WheelColumn({ label, options, value, onChange }) {
+export function WheelColumn({ label, options, value, onChange }) {
   const ref = useRef(null), timer = useRef(null), ready = useRef(false)
   const optionKey = options.map(option => option.value).join(',')
   useLayoutEffect(() => {
@@ -123,7 +124,7 @@ function DepartureTimePicker({ date, time, onConfirm }) {
   </>
 }
 
-function LocationPicker({ title, value, onClose, onConfirm }) {
+export function LocationPicker({ title, value, onClose, onConfirm }) {
   const host = useRef(null), map = useRef(null), movingToSelection = useRef(false)
   const [selected, setSelected] = useState(value)
   const [query, setQuery] = useState('')
@@ -136,9 +137,9 @@ function LocationPicker({ title, value, onClose, onConfirm }) {
   }
   useEffect(() => {
     const bounds = [[25.5, 105.3], [27.1, 107.25]]
-    map.current = L.map(host.current, { minZoom: 8, maxZoom: 12, zoomControl: false, maxBounds: bounds, maxBoundsViscosity: 1 }).setView(value ? [value.lat, value.lng] : [26.35, 106.3], value ? 11 : 8)
+    map.current = L.map(host.current, { minZoom: 8, maxZoom: 12, zoomControl: false, attributionControl: false, maxBounds: bounds, maxBoundsViscosity: 1 }).setView(value ? [value.lat, value.lng] : [26.35, 106.3], value ? 11 : 8)
     L.imageOverlay('/assets/charter-map.svg', bounds).addTo(map.current)
-    map.current.attributionControl.setPrefix('贵旅出行')
+    map.current.on('click', event => choose({ name: '地图选点', detail: `${event.latlng.lat.toFixed(5)}, ${event.latlng.lng.toFixed(5)}`, lat: event.latlng.lat, lng: event.latlng.lng }))
     map.current.on('moveend', () => {
       if (movingToSelection.current) { movingToSelection.current = false; return }
       const center = map.current.getCenter()
@@ -200,7 +201,7 @@ export function CharterForm({ value, onChange, onSubmit }) {
       <label className="charter-needs"><span>更多需求<small>（选填）</small></span><textarea rows={1} maxLength={200} value={value.needs || ''} onChange={e=>update('needs',e.target.value)} placeholder="如两大一小、帮忙提下行李" /></label>
       {error && <p className="form-error" role="alert">{error}</p>}
       <div className="charter-action-row">
-        <div className="charter-amount" aria-live="polite"><span>预估费用</span><strong><small>¥</small>{(hasRequiredDetails ? charterAmount(value) : 0).toLocaleString('zh-CN')}</strong></div>
+        <div className="charter-amount" aria-live="polite"><span>预估费用</span><strong><Price value={(hasRequiredDetails ? charterAmount(value) : 0).toLocaleString("zh-CN")} prefix="¥" /></strong></div>
         <button className="travel-primary" type="submit">预定包车服务</button>
       </div>
     </form>
@@ -233,7 +234,7 @@ export function Storefront({ products, onClose, onOpen, inactive, profileCard, b
     <div className="content-flow">{profileCard}</div>
     <div className="store-content">
       <nav className="store-filters" role="tablist" aria-label="橱窗分类">{['服务','商品'].map(item=><button key={item} role="tab" aria-selected={item===filter} aria-pressed={item===filter} onClick={()=>setFilter(item)}>{item}</button>)}</nav>
-      <div className="store-products">{visible.map(product=><button className={`store-product ${product.charter ? 'store-product-charter' : 'store-product-route'}`} key={product.id} onClick={()=>onOpen(product)}><img src={product.image} alt={product.name}/><span><strong>{product.cardName || product.name}</strong><p>{product.cardDescription || product.intro}</p>{(product.referencePrice || product.priceLabel || product.price) && <b>{product.referencePrice ? <><small>参考价 ￥</small>{product.referencePrice}</> : <><small>￥</small>{product.price || product.priceLabel?.replace(/^[￥¥]/, "")}{!product.priceLabel && <small>/{product.unit}</small>}</>}</b>}</span></button>)}</div>
+      <div className="store-products">{visible.map(product=><button className={`store-product ${product.charter ? 'store-product-charter' : 'store-product-route'}`} key={product.id} onClick={()=>onOpen(product)}><img src={product.image} alt={product.name}/><span><strong>{product.cardName || product.name}</strong><p>{product.cardDescription || product.intro}</p>{(product.referencePrice || product.priceLabel || product.price) && <b>{product.referencePrice ? <Price value={product.referencePrice} prefix="参考价 ￥" auxiliaryWeight={400} /> : <Price value={product.price || product.priceLabel?.replace(/^[￥¥]/, "")} suffix={product.priceSuffix || (!product.priceLabel ? `/${product.unit}` : "")} auxiliaryWeight={400} />}</b>}</span></button>)}</div>
     </div>
   </section></>
 }
