@@ -553,7 +553,7 @@ svg { display: block; max-width: 100%; }
 .route-detail-price span { font-size: 12px; }
 .route-bottom-cta > button { height: 48px; border: 0; border-radius: var(--radius-card); font-size: 16px; font-weight: 500; cursor: pointer; }
 .route-book-button { background: var(--primary-action); color: #fff; box-shadow: var(--action-shadow); }
-.route-charter-cta { grid-template-columns: auto repeat(2, minmax(0, 1fr)); gap: var(--space-xs); }
+.route-charter-cta { grid-template-columns: auto minmax(0, 1fr); gap: var(--space-xl); }
 .route-chat-button { border: 1px solid var(--forest-deep) !important; background: #fff; color: var(--forest-deep); box-shadow: none; }
 .booking-sheet { position: absolute; inset: 0; z-index: 20; display: flex; align-items: flex-end; }
 .booking-backdrop { position: absolute; inset: 0; border: 0; background: var(--overlay-scrim); }
@@ -1575,3 +1575,5 @@ button { font-size: 14px; font-weight: 500; }
 /* Shared typography: regular copy and medium emphasis across the application. */
 body, input, textarea, select { font-weight: 400; }
 h1, h2, h3, h4, h5, h6, strong, b { font-weight: 500; }
+
+.route-book-button:disabled { opacity: .5; cursor: default; }

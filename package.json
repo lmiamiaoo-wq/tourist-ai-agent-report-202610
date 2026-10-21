@@ -6,7 +6,10 @@
   "scripts": {
     "dev": "vite --host 0.0.0.0",
     "build": "vite build",
-    "preview": "vite preview --host 0.0.0.0"
+    "preview": "vite preview --host 0.0.0.0",
+    "setup:git": "git config core.hooksPath .githooks",
+    "changelog:prepare": "node scripts/changelog.mjs prepare",
+    "changelog:check": "node scripts/changelog.mjs check"
   },
   "dependencies": {
     "@phosphor-icons/react": "^2.1.10",

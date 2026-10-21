@@ -91,11 +91,13 @@ test('completed order runs the lost-hat exchange once and remains completed', ()
   for (let i = 0; i < 4; i++) state = reduce(state, { type: 'ADVANCE' })
   assert.equal(state.phase, 'done')
   assert.equal(state.order.status, '已完成')
-  const messages = state.messages.slice(-3)
+  const messages = state.messages.filter(message => message.type !== 'transfer-recommendation').slice(-3)
   assert.deepEqual(messages.map(message => message.role), ['user', 'assistant', 'user'])
   assert.match(messages[0].text, /帽子.*车上/)
   assert.match(messages[1].text, /孩子的帽子在车上.*寄回/)
   assert.equal(messages[2].text, '好的')
+  assert.equal(state.messages.at(-1).type, 'transfer-recommendation')
+  assert.equal(state.messages.filter(message => message.type === 'transfer-recommendation').length, 1)
   assert.deepEqual(reduce(state, { type: 'ADVANCE' }), state)
 })
 
@@ -153,4 +155,23 @@ test('storefront charter can start booking without a chat plan and preserves exi
 test('shared two-day service range stays consistent across month boundaries', () => {
   assert.equal(charterDateLabel(), '9月25日-9月26日')
   assert.equal(charterDateLabel('2026-09-30'), '10月1日-10月2日')
+})
+
+test('charter consultation switches away from a transfer draft without losing booking data', () => {
+  const booking = { origin: '贵阳北站', passengers: '4' }
+  const state = { ...initialJourney(), messages: [{ role: 'user', text: '先问接送' }], transfer: { active: true, booking } }
+  const next = reduce(state, { type: 'CHARTER_START' })
+  assert.equal(next.transfer.active, false)
+  assert.deepEqual(next.transfer.booking, booking)
+  assert.equal(next.messages.at(-1).kind, 'family-intro')
+  assert.deepEqual(reduce(next, { type: 'CHARTER_START' }), next)
+  assert.equal(reduce(next, { type: 'SEND', text: INTENTION }).phase, 'reply')
+})
+
+test('charter consultation preserves an existing order and its lifecycle', () => {
+  const state = paid()
+  const next = reduce(state, { type: 'CHARTER_START' })
+  assert.equal(next.order, state.order)
+  assert.equal(next.phase, state.phase)
+  assert.equal(next.messages, state.messages)
 })

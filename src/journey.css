@@ -216,6 +216,7 @@
 .journey-message-wrap .journey-departure-copy { margin-bottom: var(--space-s); }
 .journey-other-services { display: grid; gap: var(--space-s); margin-top: var(--space-s); }
 .journey-other-services > .chat-message { width: fit-content; }
+.journey-other-services > .guide-available-services { gap: var(--space-s); margin-top: 0; }
 .journey-service-product { display: flex; align-items: center; gap: var(--space-s); width: 100%; padding: 8px; border: 0; border-radius: var(--radius-card); background: var(--surface); text-align: left; color: var(--ink); cursor: pointer; }
 .journey-service-product > img { width: 72px; height: 72px; flex: none; object-fit: cover; border-radius: var(--radius-card-image); }
 .journey-service-product > span { display: grid; gap: 4px; flex: 1; min-width: 0; }
@@ -390,3 +391,12 @@
 
 /* Hang the opening bracket so the itinerary title optically aligns with the text below. */
 .journey-itinerary-detail .plan-introduction h1 { text-indent: -.5em; }
+
+
+/* Transfer orders share the charter card and dialog styling. */
+.transfer-order-fields { margin: 0; }
+.transfer-order-fields > div { padding: 5px 0; border: 0; font-size: 14px; }
+.transfer-order-time { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin: 16px 0; color: var(--muted); }
+.transfer-order-time input { padding: 10px 16px; border: 0; border-radius: var(--radius-pill); background: #f5f6fa; color: var(--ink); font: inherit; }
+
+.journey-order-actions.transfer-order-actions { grid-template-columns: repeat(2, minmax(0, 1fr)); }

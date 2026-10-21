@@ -1,3 +1,6 @@
+import { isDailyCharter, emptyCharterBooking, charterPrompt, charterReply, charterIssues, charterAmount } from './charterConversation.js'
+import { hasPendingTransfer, reduceTransferOrder } from './transferOrders.js'
+import { emptyTransferBooking, transferIssue, transferKey, transferMessages, transferReply } from './transferConversation.js'
 import { familyTitle, driverReply } from './familyTrip.js'
 export const PUSH_DELAY = 5000
 export const INTENTION = '中秋节我们一家4口想去看大地指纹音乐节，然后想去水边露营，想去吃个状元蹄喝喝咖啡。我们24号能到贵州。'
@@ -19,11 +22,56 @@ export const dateLabel = (start = DEFAULT_START) => {
   return `${tripDayLabel(start)}—${first.getMonth() === last.getMonth() ? `${last.getDate()}日` : tripDayLabel(start, 2)}`
 }
 export const charterDateLabel = (start = DEFAULT_START) => `${tripDayLabel(start, 1)}-${tripDayLabel(start, 2)}`
-export const initialJourney = () => ({ phase: 'intro', messages: [{ role: 'assistant', kind: 'welcome', text: INTRO }, { role: 'assistant', text: '您这次几个人来，准备玩几天？有没有特别想去的地方？跟我说说，我帮您安排。' }], order: null })
+export const initialJourney = () => ({ phase: 'intro', messages: [{ role: 'assistant', kind: 'welcome', text: INTRO }, { role: 'assistant', kind: 'family-intro', text: '您这次几个人来，准备玩几天？有没有特别想去的地方？跟我说说，我帮您安排。' }], order: null })
 const append = (state, phase, message, order = state.order) => ({ ...state, phase, order, messages: [...state.messages, message] })
 export const autoPhases = ['reply', 'preparing', 'paid', 'departed', 'service', 'thanks', 'lost-question', 'lost-confirmation', 'lost-acknowledgement']
+export function quickActionsVisible(state, index, input = '') {
+  const message = state.messages[index]
+  if (!message || index !== state.messages.length - 1 || message.quickActionsDismissed || input.trim()) return false
+  if (message.kind === 'transfer-intro') return !!state.transfer?.active
+  if (state.transfer?.active) return false
+  return (message.kind === 'suggestion' && state.phase === 'suggestion') || (message.type === 'plans' && state.phase === 'plans' && !state.consultRequested)
+}
 export function journeyReducer(state, action) {
+  if (action.type === 'DISMISS_QUICK_ACTIONS') {
+    const messages = state.messages.map(message => ['suggestion', 'transfer-intro'].includes(message.kind) || message.type === 'plans' ? { ...message, quickActionsDismissed: true } : message)
+    return { ...state, messages }
+  }
+  if (['TRANSFER_ADVANCE', 'TRANSFER_RESCHEDULE', 'TRANSFER_CANCEL', 'TRANSFER_RATE'].includes(action.type)) return reduceTransferOrder(state, action)
+  // Each service keeps its own order and lifecycle.
+  if ((state.transfer?.active || hasPendingTransfer(state)) && action.type === 'ADVANCE') return state
+  if (state.transfer?.active && ['BOOK_SERVICE', 'BOOK', 'DETAILS', 'CONSULT', 'THINK'].includes(action.type)) state = { ...state, transfer: { ...state.transfer, active: false } }
   switch (action.type) {
+    case 'CHARTER_START': {
+      const next = { ...state, transfer: state.transfer ? { ...state.transfer, active: false } : state.transfer }
+      if (state.phase !== 'intro' || hasPendingTransfer(state) || state.messages.at(-1)?.kind === 'family-intro') return next
+      return { ...next, messages: [...state.messages, { role: 'assistant', kind: 'family-intro', text: '您这次几个人来，准备玩几天？有没有特别想去的地方？跟我说说，我帮您安排。' }] }
+    }
+    case 'TRANSFER_START': {
+      const daily = isDailyCharter(action.product)
+      const consultationCount = (state.consultationCount || 0) + (action.fresh ? 1 : 0)
+      const booking = { ...(daily ? emptyCharterBooking() : emptyTransferBooking()), ...(!action.fresh && action.booking), ...(action.fresh ? { inquiryId: `inquiry-${consultationCount}` } : {}) }
+      if (!action.fresh && state.transfer?.active && state.transfer.product?.id === action.product.id && transferKey(state.transfer.booking) === transferKey(booking)) return state
+      const { issue, messages } = daily ? { issue: charterIssues(booking, action.now)[0], messages: [{ role: 'assistant', text: `好的，这次按天包车重新为您安排。${charterPrompt(booking, action.now)}` }] } : transferMessages(action.product, booking, action.now)
+      return { ...state, consultationCount, transfer: { active: true, product: action.product, booking, expected: issue?.field }, messages: [...state.messages, { type: 'transfer-service', product: action.product }, { role: 'user', text: `咨询/下单 · ${daily ? '按天包车' : '定点接送'}` }, ...messages] }
+    }
+    case 'TRANSFER_REVIEW':
+      // Viewing an already-submitted transfer must not steal the composer from the next flow.
+      if (state.transferSubmissions?.includes(transferKey(action.booking))) return state
+      return { ...state, transfer: { active: true, product: action.product, booking: { ...action.booking } } }
+    case 'TRANSFER_SEND': {
+      if (!state.transfer?.active || !action.text.trim()) return state
+      const result = (isDailyCharter(state.transfer.product) ? charterReply : transferReply)(action.text.trim(), state.transfer.booking, state.transfer.expected, action.now)
+      return { ...state, transfer: { ...state.transfer, booking: result.booking, expected: result.expected || state.transfer.expected }, messages: [...state.messages, { role: 'user', text: action.text.trim() }, { role: 'assistant', text: result.text }, ...(result.ready ? [{ type: 'transfer-ready', product: state.transfer.product, booking: { ...result.booking } }] : [])] }
+    }
+    case 'TRANSFER_SUBMIT': {
+      if (!state.transfer?.active || (isDailyCharter(state.transfer.product) ? charterIssues(action.booking, action.now)[0] : transferIssue(action.booking, action.now))) return state
+      const key = transferKey(action.booking)
+      if (state.transferSubmissions?.includes(key)) return state
+      const id = action.number || `TF${(state.transferOrders?.length || 0) + 1}`
+      const order = { id, number: id, product: state.transfer.product, booking: { ...action.booking }, amount: isDailyCharter(state.transfer.product) ? charterAmount(action.booking) : Number(state.transfer.product.price), paid: true, phase: 'paid', status: '待出行' }
+      return { ...state, transfer: { ...state.transfer, active: false, orderId: id, booking: { ...action.booking } }, transferSubmissions: [...(state.transferSubmissions || []), key], transferOrders: [...(state.transferOrders || []), order], messages: [...state.messages, { type: 'transfer-order', orderId: id }, { role: 'assistant', text: isDailyCharter(state.transfer.product) ? '好的，这次按天包车预约已确认！用车时间和路线都在订单里，出发前我会提前与您联系。' : '好的，接送预约已确认！接送时间和路线都在订单里，要改期或取消也可以在那里操作。出发前我会提前与您联系，请保持手机畅通。' }] }
+    }
     case 'RESET': return initialJourney()
     case 'SEND':
       if (state.phase !== 'intro' || !action.text.trim()) return state
@@ -37,7 +85,11 @@ export function journeyReducer(state, action) {
       if (state.phase === 'thanks') return append(state, 'lost-question', { role: 'assistant', text: state.order.rating < 5 ? '谢谢您愿意跟我说实话，这次没照顾周到的地方，跟您说声抱歉。您提的问题我会认真看，也会好好改。' : '谢谢您！您一家玩得开心，我也高兴。下次来贵州再找我，我再带您去看看别的风景，吃点地道的。' })
       if (state.phase === 'lost-question') return append(state, 'lost-confirmation', { role: 'user', text: '请问小孩的帽子是不是落在车上了？' })
       if (state.phase === 'lost-confirmation') return append(state, 'lost-acknowledgement', { role: 'assistant', text: '找到了，孩子的帽子在车上，我给您收好了。您把收件地址发我，我帮您寄回去。' })
-      if (state.phase === 'lost-acknowledgement') return append(state, 'done', { role: 'user', text: '好的' })
+      if (state.phase === 'lost-acknowledgement') {
+        const transferCompleted = state.transferOrders?.some(order => order.phase === 'done')
+        const recommendation = transferCompleted ? [] : [{ type: 'transfer-recommendation', text: '我这边也提供贵阳出发的定点接送，车站、机场、市区和景区都能接送。商务7座，行李也放得下。您可以先看看服务详情，有用车需要随时跟我说。' }]
+        return { ...state, phase: 'done', messages: [...state.messages, { role: 'user', text: '好的' }, ...recommendation] }
+      }
       return state
     case 'DETAILS':
       if (!['suggestion', 'thinking'].includes(state.phase)) return state

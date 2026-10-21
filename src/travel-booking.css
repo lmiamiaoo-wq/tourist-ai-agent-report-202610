@@ -551,11 +551,11 @@ nav.store-filters button[aria-pressed=true]::after { position: absolute; right: 
 .home-screen { padding-bottom: calc(176px + var(--home-safe-area)); }
 
 .driver-profile-page .driver-info-tags span { font-weight: 400; }
-.driver-profile-page .guide-contact-actions { grid-template-columns: minmax(0, 1fr) 112px; align-items: center; gap: 16px; }
-.guide-social-stats { display: flex; gap: 36px; padding-left: 12px; text-align: center; }
-.guide-social-stats > div { display: grid; justify-items: center; gap: 2px; }
-.guide-social-stats strong { color: var(--ink); font-size: 18px; line-height: 1.4; font-weight: 500; font-variant-numeric: tabular-nums; }
-.guide-social-stats span { color: var(--muted); font-size: 12px; }
+.driver-profile-page .guide-contact-actions { grid-template-columns: minmax(0, 1fr) minmax(96px, 112px); align-items: center; gap: clamp(8px, 3vw, 16px); }
+.guide-social-stats { display: flex; justify-content: center; gap: clamp(10px, 3vw, 16px); min-width: 0; padding-right: clamp(12px, 6vw, 24px); text-align: center; }
+.guide-social-stats > div { display: grid; justify-items: center; gap: 2px; min-width: 0; }
+.guide-social-stats strong { color: var(--ink); font-size: clamp(15px, 4.5vw, 18px); line-height: 1.4; font-weight: 500; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.guide-social-stats span { color: var(--muted); font-size: 12px; white-space: nowrap; }
 .guide-contact-actions button.guide-follow-button { border: 1px solid var(--forest-deep); background: transparent; color: var(--forest-deep); }
 .guide-contact-actions .guide-follow-button[aria-pressed='true'] { border-color: #ffb4c2; background: transparent; color: var(--price); }
 

@@ -1,3 +1,4 @@
+import { localDay, transferIssue } from './transferConversation'
 import { useState, useEffect, useRef } from 'react'
 import { createPortal } from 'react-dom'
 import { CaretRightIcon, XIcon } from '@phosphor-icons/react'
@@ -5,12 +6,14 @@ import MobileDatePicker from './MobileDatePicker'
 import BookingFields from './BookingFields'
 import { TravelSheet, WheelColumn } from './TravelBooking'
 
-export default function TransferReservation({ booking, setBooking, onSubmit, container }) {
+export default function TransferReservation({ booking, setBooking, onSubmit, container, reviewReady = false, onConsult }) {
   const [open, setOpen] = useState(false)
   const [draft, setDraft] = useState({ date: '', time: '' })
   const [timeOpen, setTimeOpen] = useState(false)
   const [timeDraft, setTimeDraft] = useState('09:00')
   const [error, setError] = useState('')
+  const errorRef = useRef(null)
+  useEffect(() => { if (error) { errorRef.current?.scrollIntoView({ block: 'center' }); errorRef.current?.focus({ preventScroll: true }) } }, [error])
   const sheet = useRef(null)
   const trigger = useRef(null)
   useEffect(() => { if (open) sheet.current?.focus() }, [open])
@@ -19,22 +22,22 @@ export default function TransferReservation({ booking, setBooking, onSubmit, con
   return <>
     <div className="charter-section-divider" />
     <section className="transfer-service-section"><h2>预约信息</h2>
-      <form id="transfer-booking-form" className="family-booking-form" onSubmit={event => {
+      <form id="transfer-booking-form" className="family-booking-form" noValidate onSubmit={event => {
         event.preventDefault()
-        if (!booking.date || !booking.time) { setError('请选择用车日期和时间'); trigger.current?.focus(); return }
-        if (!booking.origin || !booking.destination) { setError('请选择出发地和目的地'); return }
-        if (!booking.passengers) { setError('请选择出行人数'); return }
+        if (!reviewReady) { onConsult?.(); return }
+        const issue = transferIssue(booking)
+        if (issue) { setError(issue.text); return }
         setError(''); onSubmit()
       }}>
         <div className="family-range-field"><span>预定时间</span><button ref={trigger} type="button" className={`journey-date-field${booking.date ? "" : " is-placeholder"}`} aria-label="修改用车日期和时间" aria-haspopup="dialog" aria-expanded={open} onClick={() => { setDraft({ date: booking.date, time: booking.time || '09:00' }); setOpen(true) }}><span>{booking.date ? `${booking.date} ${booking.time}` : '请选择用车日期和时间'}</span><CaretRightIcon /></button></div>
         <BookingFields booking={booking} setBooking={setBooking} capacity={6} />
-        {error && <p className="journey-error" role="alert">{error}</p>}
+        {error && <p ref={errorRef} tabIndex={-1} className="journey-error" role="alert">{error}</p>}
       </form>
     </section>
     {open && container && createPortal(<div className="journey-payment-backdrop transfer-date-backdrop" onClick={event => { if (event.target === event.currentTarget) close() }}>
       <section ref={sheet} tabIndex={-1} className="journey-payment-sheet journey-date-sheet journey-range-sheet" role="dialog" aria-modal="true" aria-label="选择用车时间" onKeyDown={event => { if (event.key === 'Escape') close() }}>
         <div className="journey-sheet-handle" /><header><h2>选择用车时间</h2><button type="button" className="sheet-close" aria-label="关闭选择用车时间" onClick={close}><XIcon /></button></header>
-        <MobileDatePicker value={draft.date} showDuration={false} onChange={date => setDraft(current => ({ ...current, date }))} />
+        <MobileDatePicker minDate={localDay()} value={draft.date} showDuration={false} onChange={date => setDraft(current => ({ ...current, date }))} />
         <div className="transfer-time-picker"><span>用车时间</span>
           <button type="button" className="journey-date-field transfer-time-trigger" aria-label="修改具体时间" aria-haspopup="dialog" aria-expanded={timeOpen} onClick={() => { setTimeDraft(draft.time); setTimeOpen(true) }}><span>{draft.time}</span><CaretRightIcon /></button>
         </div>
